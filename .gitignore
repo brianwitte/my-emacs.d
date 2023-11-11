@@ -1,0 +1,33 @@
+# Backup files
+*~
+\#*\#
+.\#*
+tramp
+.cache/
+.lsp-session*
+
+# ELPA and straight.el packages
+/elpa/
+/straight/
+
+# eln cache (Emacs 28+ native compilation cache)
+/eln-cache/
+
+# Transient and other state
+/transient/
+*.eld
+projectile.cache
+projectile-bookmarks.eld
+
+# Cache and history
+/history
+
+# Local files not to be uploaded
+/local/
+
+# Your specific script and utility files (if you don't want to track them)
+/b.sh
+
+# Ignore everything in docs, uncomment the next line if you don't want to track 'docs'
+# /docs/
+
