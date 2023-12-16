@@ -3,4 +3,8 @@
 
 ;;; zig.el --- Description
 
-(provide 'e-zig)
+
+(use-package zig-mode
+  :straight t)
+
+(provide 'emx-zig)

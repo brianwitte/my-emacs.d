@@ -37,6 +37,7 @@
 (defun my-core-visual-keybindings ()
   (my-leader-def
     :keymaps 'visual
+    "fr" 'fill-region
     "; " 'evilnc-comment-or-uncomment-lines))
 
 (defun my-core-general-keybindings ()
