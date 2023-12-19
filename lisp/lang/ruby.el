@@ -28,8 +28,15 @@
   )
 
 (use-package reformatter
+  :straight t)
+
+(use-package inf-ruby
+  :straight t)
+
+(use-package rbenv
   :straight t
-  )
+  :config
+  (global-rbenv-mode))
 
 (defun rufo-success-p (retcode)
   (member retcode '(0 3)))
@@ -49,46 +56,10 @@
   (or (get-buffer "*ruby-scratch*")
       (generate-new-buffer "*ruby-scratch*")))
 
-(defun my-setup-ruby-environment ()
-  "Setup Ruby or Rails interactive environment."
-  (interactive)
-  (let ((inf-ruby-buf (my-inf-ruby-console))
-        (ruby-scratch-buf (my-ruby-scratch-buffer)))
-    (delete-other-windows)
-    (split-window-below)
-    (set-window-buffer (selected-window) inf-ruby-buf)
-    (set-window-dedicated-p (selected-window) t)
-    (read-only-mode 1)
-    (other-window 1)
-    (set-window-buffer (selected-window) ruby-scratch-buf)
-    (ruby-mode)
-    (local-set-key (kbd "C-c C-c") 'my-send-region-to-inf-ruby)))
-
-(defun my-send-region-to-inf-ruby ()
-  "Send selected region to *inf-ruby* buffer."
-  (interactive)
-  (let ((code (buffer-substring (region-beginning) (region-end))))
-    (comint-send-string (get-buffer-process "*inf-ruby*") (concat code "\n"))))
-
 (defun my-rails-console ()
   "Open Rails console."
   (interactive)
   (projectile-rails-console)
   (get-buffer "*Rails*"))
-
-(defun my-setup-rails-environment ()
-  "Setup Rails interactive environment."
-  (interactive)
-  (let ((rails-buf (my-rails-console))
-        (ruby-scratch-buf (my-ruby-scratch-buffer)))
-    (delete-other-windows)
-    (split-window-below)
-    (set-window-buffer (selected-window) rails-buf)
-    (set-window-dedicated-p (selected-window) t)
-    (read-only-mode 1)
-    (other-window 1)
-    (set-window-buffer (selected-window) ruby-scratch-buf)
-    (ruby-mode)
-    (local-set-key (kbd "C-c C-c") 'my-send-region-to-inf-ruby)))
 
 (provide 'emx-ruby)
