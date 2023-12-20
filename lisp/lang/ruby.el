@@ -31,20 +31,32 @@
   :straight t)
 
 (use-package inf-ruby
-  :straight t)
+  :straight t
+  :config
+  (defun inf-ruby-start-pry ()
+    "Run an inferior Ruby process with Pry in a buffer.
+If there is a Ruby process running in an existing buffer with Pry, switch
+to that buffer. Otherwise create a new buffer with Pry."
+    (interactive)
+    (let* ((impl "pry")
+           (command (cdr (assoc impl inf-ruby-implementations))))
+      (run-ruby command impl)))
+
+  )
 
 (use-package rbenv
   :straight t
   :config
   (global-rbenv-mode))
 
-(defun rufo-success-p (retcode)
+(defun stdrb-success-p (retcode)
   (member retcode '(0 3)))
 
-(reformatter-define rufo
-		    :program "rufo"
-		    :lighter " Rufo"
-		    :exit-code-success-p rufo-success-p)
+(reformatter-define stdrb
+  :program "standardrb"
+  :args '("--fix")
+  :lighter " StdRB"
+  :exit-code-success-p stdrb-success-p)
 
 (defun my-inf-ruby-console ()
   "Open inf-ruby-console and return its buffer."
