@@ -62,6 +62,7 @@
       " r b" #'cider-switch-to-repl-buffer
       " r B" #'+clojure/cider-switch-to-repl-buffer-and-switch-ns
       " r c" #'cider-find-and-clear-repl-output
+      " r f" #'cider-load-file
       " r l" #'cider-load-buffer
       " r L" #'cider-load-buffer-and-switch-to-repl-buffer
       ;; Test
