@@ -17,6 +17,7 @@
     "ff" 'find-file
     "fs" 'save-buffer
     ;; Buffers
+    "bs" 'fzf-switch-buffer
     "bb" 'switch-to-buffer
     "bd" 'kill-buffer
     "bi" 'ibuffer
@@ -24,14 +25,14 @@
     ": " 'execute-extended-command
     ;; Projectile keybindings
     "p p" 'projectile-switch-project
-    "SPC" 'projectile-find-file
+    "SPC" 'fzf-projectile
     ;; More projectile
     "p r" 'projectile-recentf
     "p b" 'projectile-switch-to-buffer
     "p s" 'projectile-save-project-buffers
     "p k" 'projectile-kill-buffers
     "p d" 'projectile-find-dir
-    "p D" 'projectile-dired
+    "p d" 'projectile-dired
     "p R" 'projectile-regenerate-tags))
 
 (defun my-core-visual-keybindings ()
@@ -76,11 +77,18 @@
     :keymaps 'override
     :prefix ","))
 
+(defun my-forcing-keybindings ()
+  (my-leader-def
+    :keymaps '(insert visual)
+    "ee" 'evil-force-normal-state))
+
+
 (my-core-normal-keybindings)
 (my-core-visual-keybindings)
 (my-core-general-keybindings)
 (my-window-management-keybindings)
 (my-evil-normal-keybindings)
 (my-local-leader-keybindings)
+(my-forcing-keybindings)
 
 (provide 'emx-general)

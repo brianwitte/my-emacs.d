@@ -3,9 +3,14 @@
 
 (use-package vterm
   :straight t
+  )
+
+(use-package multi-vterm
+  :straight t
   :config
   (my-leader-def
     :keymaps 'normal
-    "ot" 'vterm))
+    "ot" 'multi-vterm)
+  )
 
 (provide 'emx-utils)

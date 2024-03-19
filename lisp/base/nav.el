@@ -27,6 +27,21 @@
 ;;
 ;;(define-key evil-insert-state-map (kbd "TAB") 'nil)
 
+(use-package fzf
+  :bind
+  ;; Don't forget to set keybinds!
+  :config
+  (setq fzf/args "-x --color bw --print-query --margin=1,0 --no-hscroll"
+        fzf/executable "fzf"
+        fzf/git-grep-args "-i --line-number %s"
+        ;; command used for `fzf-grep-*` functions
+        ;; example usage for ripgrep:
+        ;; fzf/grep-command "rg --no-heading -nH"
+        fzf/grep-command "grep -nrH"
+        ;; If nil, the fzf buffer will appear at the top of the window
+        fzf/position-bottom t
+        fzf/window-height 15))
+
 (use-package corfu
   ;; Optional customizations
   :custom
@@ -233,11 +248,11 @@ the first word of the candidate.  If ANCHORED is `both' require
 that the first and last initials appear in the first and last
 words of the candidate, respectively."
     (orderless--separated-by
-     '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)))
-     (cl-loop for char across component collect `(seq word-start ,char))
-     (when anchored '(seq (group buffer-start) (zero-or-more (not alpha))))
-     (when (eq anchored 'both)
-       '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)) eol))))
+        '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)))
+      (cl-loop for char across component collect `(seq word-start ,char))
+      (when anchored '(seq (group buffer-start) (zero-or-more (not alpha))))
+      (when (eq anchored 'both)
+        '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)) eol))))
 
   (defun orderless-strict-initialism (component)
     "Match a COMPONENT as a strict initialism.
@@ -270,7 +285,6 @@ parses its input."
   )
 
 
-
 (use-package swiper
   :straight t
   :config
@@ -283,7 +297,8 @@ parses its input."
   :config
   (my-leader-def
     :keymaps 'normal
-    "rg" 'ripgrep-regexp))
+    "re" 'ripgrep-regexp
+    "rg" 'projectile-ripgrep))
 
 ;; dired stuff
 (with-eval-after-load 'dired

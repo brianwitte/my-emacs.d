@@ -2,4 +2,15 @@
 ;;
 ;;; python.el --- Description
 
-(provide 'e-python)
+(use-package pyenv-mode
+  :straight t
+  :config
+  (pyenv-mode)
+)
+; install lsp mode
+(use-package lsp-mode
+  :ensure t
+  :hook (python-mode . lsp-deferred)
+  :commands (lsp lsp-deferred))
+
+(provide 'emx-python)
