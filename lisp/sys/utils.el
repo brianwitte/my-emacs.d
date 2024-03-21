@@ -13,4 +13,8 @@
     "ot" 'multi-vterm)
   )
 
+(use-package emamux
+  :straight t
+  )
+
 (provide 'emx-utils)
