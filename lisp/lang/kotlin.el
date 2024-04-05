@@ -8,12 +8,12 @@
   :commands (lsp lsp-deferred)
   :init
   ;; Set the prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c l")
   ;; Ensure the exec-path includes the directory where kotlin-language-server is located
   ;; This line is optional if kotlin-language-server is already in a directory within exec-path
   (add-to-list 'exec-path
                "~/language-servers/kotlin-language-server/server/build/install/server/bin")
   :config
+  (use-package lsp-ui)
   ;; If kotlin-language-server is in exec-path, you don't need to set lsp-clients-kotlin-server-executable explicitly
   ;; Additional configuration...
 
@@ -73,7 +73,8 @@
   :straight t
   :mode "\\.kt\\'"
   ;; This hook automatically starts lsp-mode in Kotlin buffers
-  :hook (kotlin-mode . lsp-deferred))
+  :hook (kotlin-mode . lsp-deferred)
+  )
 
 
 (provide 'emx-kotlin)

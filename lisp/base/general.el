@@ -33,7 +33,27 @@
     "p k" 'projectile-kill-buffers
     "p d" 'projectile-find-dir
     "p d" 'projectile-dired
-    "p R" 'projectile-regenerate-tags))
+    "p R" 'projectile-regenerate-tags
+    ;; Code Actions
+    "l a"  'lsp-execute-code-action
+    ;; Refactoring
+    "l r r" 'lsp-rename
+    ;; Help/Documentation
+    "l h d" 'lsp-describe-thing-at-point
+    ;; Goto
+    "l g t" 'lsp-goto-type-definition
+    "l g i" 'lsp-goto-implementation
+    ;; Workspace/Project
+    "l r R" 'lsp-restart-workspace
+    ;; Formatting
+    "l f b" 'lsp-format-buffer
+    ;; Highlight Symbol
+    "l h l" 'lsp-symbol-highlight
+    ;; Workspace Folders
+    "l w a" 'lsp-workspace-folders-add
+    "l w r" 'lsp-workspace-folders-remove
+    "l w s" 'lsp-workspace-folders-switch
+    ))
 
 (defun my-core-visual-keybindings ()
   (my-leader-def

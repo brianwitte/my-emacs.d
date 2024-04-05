@@ -17,4 +17,7 @@
   :straight t
   )
 
+(use-package restclient
+  :straight t)
+
 (provide 'emx-utils)
