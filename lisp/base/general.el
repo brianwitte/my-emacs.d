@@ -29,6 +29,7 @@
     ;; More projectile
     "p r" 'projectile-recentf
     "p b" 'projectile-switch-to-buffer
+    "p c" 'projectile-compile-project
     "p s" 'projectile-save-project-buffers
     "p k" 'projectile-kill-buffers
     "p d" 'projectile-find-dir

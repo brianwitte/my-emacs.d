@@ -4,7 +4,7 @@
 
 (if (eq system-type 'darwin)  ; macOS
     (set-face-attribute 'default nil :height 160)
-  (set-face-attribute 'default nil :height 220))
+  (set-face-attribute 'default nil :height 120))
 
 (use-package modus-themes
   :ensure t

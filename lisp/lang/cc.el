@@ -3,57 +3,50 @@
 
 ;;; cc.el --- Description
 
-(use-package lsp-mode
-  :hook (c-mode . lsp-deferred)
-  :commands (lsp lsp-deferred)
+;;(use-package lsp-mode
+;;  :hook (c-mode . lsp-deferred)
+;;  :commands (lsp lsp-deferred)
+;;  :config
+;;  ;; Configure lsp-mode to use clangd, assuming it's already installed on your system
+;;  (setq lsp-enable-indentation nil)
+;;  (setq lsp-enable-formatting nil)
+;;
+;;  (setq lsp-clients-clangd-executable "clangd"))
+;;
+
+(use-package citre
+  :straight t
+  :init
+  ;; This is needed in `:init' block for lazy load to work.
+  (require 'citre-config)
+  ;; Bind your frequently used commands.  Alternatively, you can define them
+  ;; in `citre-mode-map' so you can only use them when `citre-mode' is enabled.
+  (global-set-key (kbd "C-x c j") 'citre-jump)
+  (global-set-key (kbd "C-x c J") 'citre-jump-back)
+  (global-set-key (kbd "C-x c p") 'citre-ace-peek)
+  (global-set-key (kbd "C-x c u") 'citre-update-this-tags-file)
   :config
-  ;; Configure lsp-mode to use clangd, assuming it's already installed on your system
-  (setq lsp-enable-indentation nil)
-  (setq lsp-enable-formatting nil)
+  (setq
+   ;; Set these if readtags/ctags is not in your PATH.
+   ;;citre-readtags-program "/path/to/readtags"
+   citre-ctags-program "/usr/bin/ctags-universal"
+   ;; Set these if gtags/global is not in your PATH (and you want to use the
+   ;; global backend)
+   ;;citre-gtags-program "/path/to/gtags"
+   ;;citre-global-program "/path/to/global"
+   ;; Set this if you use project management plugin like projectile.  It's
+   ;; used for things like displaying paths relatively, see its docstring.
+   citre-project-root-function #'projectile-project-root
+   ;; Set this if you want to always use one location to create a tags file.
+   ;;citre-default-create-tags-file-location 'global-cache
+   ;; See the "Create tags file" section above to know these options
+   citre-use-project-root-when-creating-tags t
+   citre-prompt-language-for-ctags-command t
+   ;; By default, when you open any file, and a tags file can be found for it,
+   ;; `citre-mode' is automatically enabled.  If you only want this to work for
+   ;; certain modes (like `prog-mode'), set it like this.
+   citre-auto-enable-citre-mode-modes '(prog-mode)))
 
-  (setq lsp-clients-clangd-executable "clangd"))
 
-(defun c-lineup-arglist-tabs-only (ignored)
-  "Line up argument lists by tabs, not spaces"
-  (let* ((anchor (c-langelem-pos c-syntactic-element))
-         (column (c-langelem-2nd-pos c-syntactic-element))
-         (offset (- (1+ column) anchor))
-         (steps (floor offset c-basic-offset)))
-    (* (max steps 1)
-       c-basic-offset)))
-
-(add-hook
- 'c-mode-hook
- (lambda ()
-   (when (and buffer-file-name
-              (string-prefix-p (expand-file-name "~/proj/ntxx/")
-                               (file-name-directory buffer-file-name)))
-     (setq-local c-basic-offset 8)
-     (setq-local c-label-minimum-indentation 0)
-     (setq-local indent-tabs-mode t)
-     (setq-local show-trailing-whitespace t)
-     (setq-local c-offsets-alist
-                 '((arglist-close         . c-lineup-arglist-tabs-only)
-                   (arglist-cont-nonempty . (c-lineup-gcc-asm-reg c-lineup-arglist-tabs-only))
-                   (arglist-intro         . +)
-                   (brace-list-intro      . +)
-                   (c                     . c-lineup-C-comments)
-                   (case-label            . 0)
-                   (comment-intro         . c-lineup-comment)
-                   (cpp-define-intro      . +)
-                   (cpp-macro             . (lambda (ignored) -1000))
-                   (cpp-macro-cont        . +)
-                   (defun-block-intro     . +)
-                   (else-clause           . 0)
-                   (func-decl-cont        . +)
-                   (inclass               . +)
-                   (inher-cont            . c-lineup-multi-inher)
-                   (knr-argdecl-intro     . 0)
-                   (label                 . (lambda (ignored) -1000))
-                   (statement             . 0)
-                   (statement-block-intro . +)
-                   (statement-case-intro  . +)
-                   (statement-cont        . +)
-                   (substatement          . +))))))
 
 (provide 'emx-cc)
