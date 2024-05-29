@@ -11,12 +11,11 @@
   (interactive)
   ;; Evaluate the preceding sexp and get the result.
   (let* ((result (eval-last-sexp nil))
-         (result-string (format ";=> %S" result))
-         (display-pos (point))) ; The position to display the message at.
+         (result-string (format "\n;=> %S" result))
+         (display-pos (1+ (point)))) ; The position to display the message at.
     ;; Use `momentary-string-display` to show the result temporarily.
     ;; By default, it will disappear with the next keystroke.
     (momentary-string-display result-string display-pos)))
-
 
 (defun setup-elisp-mode-keys ()
   (my-local-leader-def :keymaps 'emacs-lisp-mode-map
@@ -29,6 +28,7 @@
     "gf" 'find-function
     "gv" 'find-variable
     "gl" 'find-library))
+
 
 
 (add-hook 'emacs-lisp-mode-hook 'setup-elisp-mode-keys)
