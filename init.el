@@ -12,6 +12,11 @@
 
 ;; configuration entrypoints -- subdir == *.el within dir
 ;; -----------------------------------------------------------------------------
+
+(load-library "themes/anti-zenburn-theme.el")
+(load-library "themes/zenburn-theme.el")
+(load-theme 'zenburn t)
+
 (require 'emx-base   "base/core.el")  ;; subdir - evil, projectile, general, ui, etc.
 (require 'emx-elisp  "elisp/core.el") ;; subdir - elisp config
 
@@ -41,13 +46,15 @@
 (require 'emx-config-fmts "lang/config_fmts.el") ;; ini, yaml, edn, etc.
 
 ;; lang -- comment/uncomment
-;;(require 'emx-cc     "lang/cc.el")     ;; c
-;;(require 'emx-clj    "lang/clj.el")    ;; clojure
-;;(require 'emx-fnl    "lang/fnl.el")    ;; fennel/lua
-;;(require 'emx-ocaml  "lang/ocaml.el")  ;; ocaml
-;;(require 'emx-python "lang/python.el") ;; python
-(require 'emx-ruby   "lang/ruby.el") ;; ruby
-;;(require 'emx-zig    "lang/zig.el")    ;; zig
+(require 'emx-cc     "lang/cc.el")
+(require 'emx-clj    "lang/clj.el")
+(require 'emx-fnl    "lang/fnl.el")
+;;(require 'emx-java   "lang/java.el")
+;;(require 'emx-kotlin "lang/kotlin.el")
+;;(require 'emx-ocaml  "lang/ocaml.el")
+;;(require 'emx-python "lang/python.el")
+(require 'emx-ruby   "lang/ruby.el")
+;;(require 'emx-zig    "lang/zig.el")
 
 ;; not yet categorized
 (require 'emx-misc

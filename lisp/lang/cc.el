@@ -47,6 +47,10 @@
    ;; certain modes (like `prog-mode'), set it like this.
    citre-auto-enable-citre-mode-modes '(prog-mode)))
 
+(setq projectile-tags-backend nil)
+(setq projectile-tags-command nil)
+(setq projectile-tags-file-name "tags")
+
 
 
 (provide 'emx-cc)

@@ -12,8 +12,4 @@
           (kill-buffer))
       (message "Buffer is not visiting a file"))))
 
-
-(use-package xclip
-  :straight t)
-
 (provide 'emx-buffer)
