@@ -12,10 +12,9 @@
 
 ;; configuration entrypoints -- subdir == *.el within dir
 ;; -----------------------------------------------------------------------------
-
-(load-library "themes/anti-zenburn-theme.el")
-(load-library "themes/zenburn-theme.el")
-(load-theme 'zenburn t)
+(use-package leuven-theme
+  :config
+  (load-theme 'leuven-dark))
 
 (require 'emx-base   "base/core.el")  ;; subdir - evil, projectile, general, ui, etc.
 (require 'emx-elisp  "elisp/core.el") ;; subdir - elisp config
@@ -52,6 +51,7 @@
 ;;(require 'emx-java   "lang/java.el")
 ;;(require 'emx-kotlin "lang/kotlin.el")
 ;;(require 'emx-ocaml  "lang/ocaml.el")
+(require 'emx-poke    "lang/poke.el")
 ;;(require 'emx-python "lang/python.el")
 (require 'emx-ruby   "lang/ruby.el")
 ;;(require 'emx-zig    "lang/zig.el")
