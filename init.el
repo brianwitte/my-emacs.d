@@ -43,6 +43,8 @@
 ;; primary text editing config -- always enabled
 (require 'emx-editor      "lang/editor.el")      ;; global settings, lsp, etc.
 (require 'emx-config-fmts "lang/config_fmts.el") ;; ini, yaml, edn, etc.
+(require 'emx-lsp         "lang/lsp.el")
+(require 'emx-tree-sitter "lang/tree_sitter.el")
 
 ;; lang -- comment/uncomment
 (require 'emx-cc     "lang/cc.el")
@@ -50,6 +52,7 @@
 (require 'emx-fnl    "lang/fnl.el")
 ;;(require 'emx-java   "lang/java.el")
 ;;(require 'emx-kotlin "lang/kotlin.el")
+(require 'emx-lua    "lang/lua.el")
 ;;(require 'emx-ocaml  "lang/ocaml.el")
 (require 'emx-poke    "lang/poke.el")
 ;;(require 'emx-python "lang/python.el")
