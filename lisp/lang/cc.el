@@ -3,17 +3,6 @@
 
 ;;; cc.el --- Description
 
-;;(use-package lsp-mode
-;;  :hook (c-mode . lsp-deferred)
-;;  :commands (lsp lsp-deferred)
-;;  :config
-;;  ;; Configure lsp-mode to use clangd, assuming it's already installed on your system
-;;  (setq lsp-enable-indentation nil)
-;;  (setq lsp-enable-formatting nil)
-;;
-;;  (setq lsp-clients-clangd-executable "clangd"))
-;;
-
 (use-package citre
   :straight t
   :init
@@ -26,6 +15,29 @@
   (global-set-key (kbd "C-x c p") 'citre-ace-peek)
   (global-set-key (kbd "C-x c u") 'citre-update-this-tags-file)
   :config
+  ;; Enable integrations
+  (setq-default citre-enable-capf-integration t)
+  ;;(setq-default citre-enable-xref-integration t)
+  ;;(setq-default citre-enable-imenu-integration t)
+
+  ;; Customize completion behavior
+  (setq citre-completion-case-sensitive nil) ;; Adjust according to your needs
+  (setq citre-capf-substr-completion t)
+  (setq citre-capf-optimize-for-popup t)
+
+  ;; Set up completion styles
+;;  (setq completion-styles '(substring basic))
+;;  (add-to-list 'completion-category-overrides
+;;               '(citre (styles basic)))
+
+
+
+;;
+;;  ;; Add the hook for org-mode unfolding
+;;  (add-hook 'citre-after-jump-hook
+;;            (defun unfold-if-in-org-mode ()
+;;              (when (derived-mode-p 'org-mode)
+;;                (org-fold-show-context 'isearch))))
   (setq
    ;; Set these if readtags/ctags is not in your PATH.
    ;;citre-readtags-program "/path/to/readtags"
@@ -45,12 +57,17 @@
    ;; By default, when you open any file, and a tags file can be found for it,
    ;; `citre-mode' is automatically enabled.  If you only want this to work for
    ;; certain modes (like `prog-mode'), set it like this.
-   citre-auto-enable-citre-mode-modes '(prog-mode)))
+   citre-auto-enable-citre-mode-modes '(c-mode prog-mode)))
+
+;; Ensure that Citre uses Corfu for popup completion
+;;(add-hook 'completion-at-point-functions #'my-completion-at-point)
+
+;; Optionally, you can bind the completion-at-point function to a key
+;;(global-set-key (kbd "M-TAB") #'my-completion-at-point)
 
 (setq projectile-tags-backend nil)
 (setq projectile-tags-command nil)
 (setq projectile-tags-file-name "tags")
-
 
 
 (provide 'emx-cc)

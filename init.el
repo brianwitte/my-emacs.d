@@ -13,10 +13,11 @@
 ;; configuration entrypoints -- subdir == *.el within dir
 ;; -----------------------------------------------------------------------------
 (use-package leuven-theme
+  :straight t
   :config
   (load-theme 'leuven-dark))
 
-(require 'emx-base   "base/core.el")  ;; subdir - evil, projectile, general, ui, etc.
+(require 'emx-base   "base/core.el")  ;; subdir - ui, org, general, etc.
 (require 'emx-elisp  "elisp/core.el") ;; subdir - elisp config
 
 (require 'emx-build  "bld/build.el")  ;; compilation & build systems
@@ -35,6 +36,10 @@
 (require 'emx-browse "web/browse.el") ;; surf ze web
 (require 'emx-mail   "web/mail.el")   ;; mu4e, msmtp
 (require 'emx-bots   "web/bots.el")   ;; talk to machines
+
+;; files that are bound to general.el keybindings for quick navigation
+(require 'file-keymaps
+         "file_keymaps.el")
 
 ;; main personal config
 (require 'my-config

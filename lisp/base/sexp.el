@@ -19,13 +19,4 @@
     "kw"  'sp-wrap-sexp
     "ky"  'sp-copy-sexp))
 
-(use-package smartparens
-  :straight t
-  :hook (prog-mode . smartparens-mode)
-  :config
-  (require 'smartparens-config)  ; optional, but recommended
-  (smartparens-global-mode t)    ; enable smartparens everywhere
-
-  (add-hook 'smartparens-mode-hook 'my-sexp-keybindings))
-
 (provide 'emx-sexp)

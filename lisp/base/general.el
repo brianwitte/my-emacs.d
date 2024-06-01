@@ -103,7 +103,6 @@
     :keymaps '(insert visual)
     "ee" 'evil-force-normal-state))
 
-
 (my-core-normal-keybindings)
 (my-core-visual-keybindings)
 (my-core-general-keybindings)
