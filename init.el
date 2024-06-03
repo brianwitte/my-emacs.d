@@ -58,7 +58,7 @@
 ;;(require 'emx-java   "lang/java.el")
 ;;(require 'emx-kotlin "lang/kotlin.el")
 (require 'emx-lua    "lang/lua.el")
-;;(require 'emx-ocaml  "lang/ocaml.el")
+(require 'emx-ocaml  "lang/ocaml.el")
 (require 'emx-poke    "lang/poke.el")
 ;;(require 'emx-python "lang/python.el")
 (require 'emx-ruby   "lang/ruby.el")

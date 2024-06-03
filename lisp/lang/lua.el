@@ -5,7 +5,6 @@
 (setq lsp-clients-lua-language-server-install-dir
       "/home/bkz/lang-servers/lua-language-server/")
 
-
 (use-package lua-mode
   :straight t
   :init
