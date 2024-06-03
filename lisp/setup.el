@@ -53,10 +53,6 @@
        "\n"
        "(message \"eval me\")\n"
        "\n"
-       "(use-package xclip\n"
-       "  :straight t\n"
-       "  :config\n"
-       "  (setq xclip-mode 1))\n"
        ))
 
 (setq native-comp-eln-load-path (list (expand-file-name "eln-cache/" my-emacs-local-dir)))

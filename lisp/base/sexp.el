@@ -19,4 +19,8 @@
     "kw"  'sp-wrap-sexp
     "ky"  'sp-copy-sexp))
 
+(add-hook 'emacs-lisp-mode-hook 'my-sexp-keybindings)
+(add-hook 'clojure-mode-hook 'my-sexp-keybindings)
+(add-hook 'fennel-mode-hook 'my-sexp-keybindings)
+
 (provide 'emx-sexp)

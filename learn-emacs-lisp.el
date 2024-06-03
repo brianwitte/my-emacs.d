@@ -89,7 +89,8 @@
 ;; `C-xC-e' => "Hello, I am Bastien"
 
 ;; You can combine sexps into functions:
-(defun hello () (insert "Hello, I am " my-name))
+(defun hello ()
+  (insert "Hello, I am " my-name))
 ;; `C-xC-e' => hello
 
 ;; You can evaluate functions:
@@ -101,7 +102,8 @@
 ;; boring, let's tell the function to accept one argument (here
 ;; the argument is called "name"):
 
-(defun hello (name) (insert "Hello " name))
+(defun hello (name)
+  (insert "Hello " name))
 ;; `C-xC-e' => hello
 
 ;; Now let's call the function with the string "you" as the value
@@ -126,9 +128,7 @@
 ;; window interactively.
 
 ;; You can combine several sexps with `progn':
-(progn
-  (switch-to-buffer-other-window "*test*")
-  (hello "you"))
+(progn (switch-to-buffer-other-window "*test*") (hello "you"))
 ;; `C-xC-e'
 ;; => [The screen has two windows and cursor is in the *test* buffer]
 
@@ -138,17 +138,10 @@
 ;; Always go back to the *scratch* buffer with the mouse or `C-xo'.
 
 ;; It's often useful to erase the buffer:
-(progn
-  (switch-to-buffer-other-window "*test*")
-  (erase-buffer)
-  (hello "there"))
+(progn (switch-to-buffer-other-window "*test*") (erase-buffer) (hello "there"))
 
 ;; Or to go back to the other window:
-(progn
-  (switch-to-buffer-other-window "*test*")
-  (erase-buffer)
-  (hello "you")
-  (other-window 1))
+(progn (switch-to-buffer-other-window "*test*") (erase-buffer) (hello "you") (other-window 1))
 
 ;; You can bind a value to a local variable with `let':
 (let ((local-name "you"))
@@ -175,10 +168,12 @@
 ;; Let's create another function which uses `let':
 (defun greeting (name)
   (let ((your-name "Bastien"))
-    (insert (format "Hello %s!\n\nI am %s."
-                    name       ; the argument of the function
-                    your-name  ; the let-bound variable "Bastien"
-                    ))))
+    (insert
+      (format
+        "Hello %s!\n\nI am %s."
+        name ; the argument of the function
+        your-name ; the let-bound variable "Bastien"
+        ))))
 
 ;; And evaluate it:
 (greeting "you")
@@ -191,10 +186,12 @@
 ;; Let's make our `greeting' function prompt for your name:
 (defun greeting (from-name)
   (let ((your-name (read-from-minibuffer "Enter your name: ")))
-    (insert (format "Hello!\n\nI am %s and you are %s."
-                    from-name ; the argument of the function
-                    your-name ; the let-bound var, entered at prompt
-                    ))))
+    (insert
+      (format
+        "Hello!\n\nI am %s and you are %s."
+        from-name ; the argument of the function
+        your-name ; the let-bound var, entered at prompt
+        ))))
 
 (greeting "Bastien")
 
@@ -236,10 +233,10 @@
 
 ;; Refine `greeting' to say hello to everyone in `list-of-names':
 (defun greeting ()
-    (switch-to-buffer-other-window "*test*")
-    (erase-buffer)
-    (mapcar 'hello list-of-names)
-    (other-window 1))
+  (switch-to-buffer-other-window "*test*")
+  (erase-buffer)
+  (mapcar 'hello list-of-names)
+  (other-window 1))
 
 (greeting)
 
@@ -250,11 +247,10 @@
 ;; Now let's arrange a bit what we have in the displayed buffer:
 
 (defun replace-hello-by-bonjour ()
-    (switch-to-buffer-other-window "*test*")
-    (goto-char (point-min))
-    (while (search-forward "Hello")
-      (replace-match "Bonjour"))
-    (other-window 1))
+  (switch-to-buffer-other-window "*test*")
+  (goto-char (point-min))
+  (while (search-forward "Hello") (replace-match "Bonjour"))
+  (other-window 1))
 
 ;; (goto-char (point-min)) goes to the beginning of the buffer.
 ;; (search-forward "Hello") searches for the string "Hello".
@@ -280,28 +276,26 @@
 ;; We use this sexp in the function below, which doesn't throw an error:
 
 (defun hello-to-bonjour ()
-    (switch-to-buffer-other-window "*test*")
-    (erase-buffer)
-    ;; Say hello to names in `list-of-names'
-    (mapcar 'hello list-of-names)
-    (goto-char (point-min))
-    ;; Replace "Hello" by "Bonjour"
-    (while (search-forward "Hello" nil t)
-      (replace-match "Bonjour"))
-    (other-window 1))
+  (switch-to-buffer-other-window "*test*")
+  (erase-buffer)
+  ;; Say hello to names in `list-of-names'
+  (mapcar 'hello list-of-names)
+  (goto-char (point-min))
+  ;; Replace "Hello" by "Bonjour"
+  (while (search-forward "Hello" nil t) (replace-match "Bonjour"))
+  (other-window 1))
 
 (hello-to-bonjour)
 
 ;; Let's boldify the names:
 
 (defun boldify-names ()
-    (switch-to-buffer-other-window "*test*")
-    (goto-char (point-min))
-    (while (re-search-forward "Bonjour \\(.+\\)!" nil t)
-      (add-text-properties (match-beginning 1)
-                           (match-end 1)
-                           (list 'face 'bold)))
-    (other-window 1))
+  (switch-to-buffer-other-window "*test*")
+  (goto-char (point-min))
+  (while
+    (re-search-forward "Bonjour \\(.+\\)!" nil t)
+    (add-text-properties (match-beginning 1) (match-end 1) (list 'face 'bold)))
+  (other-window 1))
 
 ;; This functions introduces `re-search-forward': instead of
 ;; searching for the string "Bonjour", you search for a pattern,
