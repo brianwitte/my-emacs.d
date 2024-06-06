@@ -10,15 +10,16 @@
 (require 'setup
          "setup.el")  ;; dirs, scratch, straight bootstrap, etc.
 
-;; configuration entrypoints -- subdir == *.el within dir
-;; -----------------------------------------------------------------------------
+;; current main theme
 (use-package leuven-theme
   :straight t
   :config
   (load-theme 'leuven-dark))
 
+;; configuration entrypoints -- subdir == *.el within dir
+;; -----------------------------------------------------------------------------
+
 (require 'emx-base   "base/core.el")  ;; subdir - ui, org, general, etc.
-(require 'emx-elisp  "elisp/core.el") ;; subdir - elisp config
 
 (require 'emx-build  "bld/build.el")  ;; compilation & build systems
 (require 'emx-ci     "bld/ci.el")     ;; ci/cd
@@ -52,6 +53,7 @@
 (require 'emx-tree-sitter "lang/tree_sitter.el")
 
 ;; lang -- comment/uncomment
+(require 'emx-elisp  "lang/elisp.el") ;; subdir - elisp config
 (require 'emx-cc     "lang/cc.el")
 (require 'emx-clj    "lang/clj.el")
 (require 'emx-fnl    "lang/fnl.el")

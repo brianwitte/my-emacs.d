@@ -130,4 +130,8 @@
   (setq lsp-ui-sideline-diagnostic-max-lines 2)
   (setq lsp-ui-peek-always-show t)
   (setq lsp-ui-sideline-delay 0.05))
+
+(use-package reformatter
+  :straight t)
+
 (provide 'emx-editor)

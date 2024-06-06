@@ -70,6 +70,8 @@
 (defun my-window-management-keybindings ()
   (my-leader-def
     :keymaps 'normal
+    ;; Window resize
+    "wr" 'my/resize-window
     ;; Window splits
     "ws" 'split-window-below
     "wv" 'split-window-right

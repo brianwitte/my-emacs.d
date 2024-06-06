@@ -78,23 +78,17 @@ to that buffer. Otherwise create a new buffer with Pry."
   ;; Configurations, keybindings, etc.
   )
 
-(use-package reformatter
-  :straight t)
-
 (use-package rbenv
   :straight t
   :init
   (setenv "RBENV_ROOT" "/opt/homebrew")
   :config
   ;; (global-rbenv-mode)
-
   )
 
-(defun rufo-success-p (retcode)
-  (member retcode '(0 3)))
-
-(reformatter-define rufo
-  :program "rufo"
+(require 'reformatter)
+(reformatter-define rubyfmt
+  :program "rubyfmt"
   :lighter " Rufo"
   :exit-code-success-p rufo-success-p)
 
