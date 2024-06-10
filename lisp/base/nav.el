@@ -190,6 +190,62 @@
                    "  ")
                  cand))))
 
+(use-package embark
+  :demand t
+  :general
+  (my/leader-keys
+     "." 'embark-act) ;; easily accessible 'embark-act' binding.
+  ("C-." 'embark-act) ;; overlaps with evil-repeat 
+  ("C-;" 'embark-dwim) ;; overlaps with IEdit
+  (:keymaps 'vertico-map
+            "C-." 'embark-act) ;; embark on completion candidates
+  (:keymaps 'embark-heading-map
+            "l" 'org-id-store-link)
+  :init
+  (setq prefix-help-command #'embark-prefix-help-command)
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+ (use-package avy
+    :demand t
+    :init
+(defun my/avy-action-insert-newline (pt)
+      (save-excursion
+        (goto-char pt)
+        (newline))
+      (select-window
+       (cdr
+        (ring-ref avy-ring 0))))
+    (defun my/avy-action-kill-whole-line (pt)
+      (save-excursion
+        (goto-char pt)
+        (kill-whole-line))
+      (select-window
+       (cdr
+        (ring-ref avy-ring 0))))
+    (defun my/avy-action-embark (pt)
+      (unwind-protect
+          (save-excursion
+            (goto-char pt)
+            (embark-act))
+        (select-window
+         (cdr (ring-ref avy-ring 0))))
+      t) ;; adds an avy action for embark
+    :general
+    (general-def '(normal motion)
+      "s" 'evil-avy-goto-char-timer
+      "f" 'evil-avy-goto-char-in-line
+      "gl" 'evil-avy-goto-line ;; this rules
+      ";" 'avy-resume)
+    :config
+    (setf (alist-get ?. avy-dispatch-alist) 'my/avy-action-embark ;; embark integration
+          (alist-get ?i avy-dispatch-alist) 'my/avy-action-insert-newline
+          (alist-get ?K avy-dispatch-alist) 'my/avy-action-kill-whole-line)) ;; kill lines with avy
+
 (use-package orderless
   :custom
   (completion-styles '(orderless))

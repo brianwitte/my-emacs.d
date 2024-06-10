@@ -89,8 +89,7 @@ to that buffer. Otherwise create a new buffer with Pry."
 (require 'reformatter)
 (reformatter-define rubyfmt
   :program "rubyfmt"
-  :lighter " Rufo"
-  :exit-code-success-p rufo-success-p)
+  :lighter " Rubyfmt")
 
 (defun my-inf-ruby-console ()
   "Open inf-ruby-console and return its buffer."

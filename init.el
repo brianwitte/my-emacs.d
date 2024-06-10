@@ -10,6 +10,9 @@
 (require 'setup
          "setup.el")  ;; dirs, scratch, straight bootstrap, etc.
 
+(require 'emx-compat
+         "compat.el")  ;; cross-platform concerns
+
 ;; current main theme
 (use-package leuven-theme
   :straight t

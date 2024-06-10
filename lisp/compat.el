@@ -6,4 +6,6 @@
 (use-package xclip
   :straight t
   :config
-  (setq xclip-mode 1)
+  (setq xclip-mode 1))
+
+ (provide 'emx-compat)
