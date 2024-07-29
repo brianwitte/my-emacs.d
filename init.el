@@ -17,7 +17,7 @@
 (use-package leuven-theme
   :straight t
   :config
-  (load-theme 'leuven-dark))
+  (load-theme 'leuven-dark :no-confirm))
 
 ;; configuration entrypoints -- subdir == *.el within dir
 ;; -----------------------------------------------------------------------------
@@ -64,7 +64,7 @@
 ;;(require 'emx-kotlin "lang/kotlin.el")
 (require 'emx-lua    "lang/lua.el")
 (require 'emx-ocaml  "lang/ocaml.el")
-(require 'emx-poke    "lang/poke.el")
+(require 'emx-poke   "lang/poke.el")
 ;;(require 'emx-python "lang/python.el")
 (require 'emx-ruby   "lang/ruby.el")
 ;;(require 'emx-zig    "lang/zig.el")
