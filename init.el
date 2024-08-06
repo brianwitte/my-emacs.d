@@ -61,6 +61,7 @@
 (require 'emx-clj    "lang/clj.el")
 (require 'emx-fnl    "lang/fnl.el")
 ;;(require 'emx-java   "lang/java.el")
+(require 'emx-js     "lang/js.el")
 ;;(require 'emx-kotlin "lang/kotlin.el")
 (require 'emx-lua    "lang/lua.el")
 (require 'emx-ocaml  "lang/ocaml.el")

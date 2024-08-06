@@ -29,6 +29,13 @@
 ;;  lsp-zig
 ;;  lsp-jq)
 
+(use-package treesit-auto
+  :straight t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
 
 (use-package tree-sitter-langs
   :straight t)
@@ -58,7 +65,9 @@
   :init
   (setq lsp-keymap-prefix "C-c l")
   :hook ((java-mode       ; eclipse-jdtls
-          ) . lsp-deferred)
+          tsx-ts-mode
+          typescript-ts-mode
+          js-ts-mode) . lsp-deferred)
   :preface
   (defun my/lsp-execute-code-action ()
     "Execute code action with pulse-line animation."
@@ -100,7 +109,6 @@
   (setq lsp-idle-delay 0.25)
   (setq lsp-auto-execute-action nil)
   )
-
 
 (use-package lsp-ui
   :commands lsp-ui-mode
