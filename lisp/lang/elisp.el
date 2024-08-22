@@ -55,4 +55,6 @@
   :lighter " Elatto")
 
 
+(add-hook 'emacs-lisp-mode-hook 'setup-elisp-mode-keys)
+
 (provide 'emx-elisp)

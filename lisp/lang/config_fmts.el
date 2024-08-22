@@ -17,15 +17,6 @@
     (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively))
   ;; Optional: If using yq for YAML files
   (setq jq-interactive-command "jq"
-        jq-interactive-default-options "")
-  )
-
-(use-package ob-jq
-  :after org
-  :config
-  ;; Enable jq for Org Babel
-  (org-babel-do-load-languages 'org-babel-load-languages
-                               '((jq . t))))
-
+        jq-interactive-default-options ""))
 
 (provide 'emx-config-fmts)

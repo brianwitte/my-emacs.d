@@ -330,6 +330,14 @@ parses its input."
     :keymaps 'normal
     "ss" 'swiper))
 
+
+(use-package neotree
+  :straight t
+  :config
+  (my-leader-def
+    :keymaps 'normal
+    "op" 'neotree))
+
 (use-package ripgrep
   :straight t
   :config
@@ -337,6 +345,8 @@ parses its input."
     :keymaps 'normal
     "re" 'ripgrep-regexp
     "rg" 'projectile-ripgrep))
+
+
 
 ;; dired stuff
 (with-eval-after-load 'dired
