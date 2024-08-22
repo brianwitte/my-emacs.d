@@ -26,17 +26,6 @@
 (require 'use-package)
 (setq use-package-verbose t)
 
-(use-package leuven-theme
-  :straight t
-  :config
-  ;; Load the theme, but defer in daemon mode until a frame is created
-  (if (daemonp)
-      (add-hook 'after-make-frame-functions
-                (lambda (frame)
-                  (with-selected-frame frame
-                    (load-theme 'leuven-dark :no-confirm))))
-    (load-theme 'leuven-dark :no-confirm)))
-
 ;; ascii art by Brian MacDonald
 ;; https://www.asciiart.eu/computers/computers
 (setq scratch-ascii-art
@@ -108,6 +97,17 @@
 
 (straight-use-package 'use-package)      ; integrate with use-package
 (setq straight-use-package-by-default t) ; use straight.el for every package by default
+
+
+
+;; =======================
+;; Theme
+;; =======================
+
+(use-package leuven-theme
+  :straight t
+  :config
+  (load-theme 'leuven-dark :no-confirm))
 
 ;; =======================
 ;; Compatibility Layer
@@ -682,12 +682,12 @@ parses its input."
     "ss" 'swiper))
 
 
-(use-package neotree
+(use-package treemacs
   :straight t
   :config
   (my-leader-def
     :keymaps 'normal
-    "op" 'neotree))
+    "op" 'treemacs))
 
 (use-package ripgrep
   :straight t
@@ -1694,7 +1694,6 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   :straight t
   :init
   (require 'citre-config)  ; Required for lazy loading
-
   :config
   ;; Enable Citre integrations
   (setq-default citre-enable-capf-integration t)
@@ -1916,11 +1915,11 @@ FILE-MAP is a list of (NAME . PATH) pairs."
             (define-key typescript-mode-map (kbd "C-c l o") 'vtsls-open-ts-log)
             (define-key typescript-mode-map (kbd "C-c l i") 'vtsls-organize-imports)))
 
+;; #######################
+
 ;; =======================
 ;; Lua Configuration
 ;; =======================
-;;
-;;; lua.el --- Description
 
 (setq lsp-clients-lua-language-server-install-dir
       "/home/bkz/lang-servers/lua-language-server/")
@@ -1935,11 +1934,11 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (add-hook 'lua-mode-local-vars-hook #'lsp 'append)
   (add-hook 'lua-mode-local-vars-hook #'tree-sitter 'append))
 
+;; #######################
+
 ;; =======================
 ;; OCaml Configuration
 ;; =======================
-;;
-;;; ocaml.el --- Description
 
 ;; Major mode for OCaml programming
 (use-package tuareg
@@ -2004,6 +2003,8 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   :config
   (flycheck-ocaml-setup))
 
+;; #######################
+
 ;; =======================
 ;; Poke Configuration
 ;; =======================
@@ -2013,6 +2014,8 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 (use-package poke-mode
   :straight t)
 
+;; #######################
+
 ;; =======================
 ;; Ruby Configuration
 ;; =======================
@@ -2020,17 +2023,18 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 
 ;;; ruby.el --- Description
 
-;;(use-package lsp-mode
-;;  :straight t
-;;  :commands (lsp lsp-deferred)
-;;  :hook ((ruby-mode . lsp-deferred))
-;;  :init
-;;  (setq lsp-enable-snippet nil  ;; Disable snippets
-;;        lsp-enable-symbol-highlighting nil  ;; Disable symbol highlighting
-;;        lsp-enable-text-document-color nil  ;; Disable text document color
-;;        lsp-enable-on-type-formatting nil  ;; Disable auto formatting
-;;        lsp-enable-indentation nil  ;; Disable indentation
-;;        lsp-diagnostics-provider :none))  ;; Disable diagnostics
+(use-package lsp-mode
+  :straight t
+  :commands (lsp lsp-deferred)
+  :hook ((ruby-mode . lsp-deferred))
+  :init
+  (setq lsp-enable-snippet nil  ;; Disable snippets
+        lsp-enable-symbol-highlighting nil  ;; Disable symbol highlighting
+        lsp-enable-text-document-color nil  ;; Disable text document color
+        lsp-enable-on-type-formatting nil  ;; Disable auto formatting
+        lsp-enable-indentation nil  ;; Disable indentation
+        lsp-diagnostics-provider :none)
+  )  ;; Disable diagnostics
 
 
 (use-package inf-ruby
@@ -2045,43 +2049,22 @@ to that buffer. Otherwise create a new buffer with Pry."
            (command (cdr (assoc impl inf-ruby-implementations))))
       (run-ruby command impl))))
 
+(defun my-ruby-lsp-executable ()
+  (let ((ruby-exec (expand-file-name "3.1.3/bin/ruby-lsp" (getenv "HOME"))))
+    (if (file-executable-p ruby-exec)
+        ruby-exec
+      (error "ruby-lsp not found in ~/.rubies/3.1.3"))))
 
-(use-package robe
+(use-package lsp-ui
   :straight t
+  :commands lsp-ui-mode
+  :after lsp-mode
   :config
-  (defun my-ruby-mode-robe-keybindings ()
-    (my-local-leader-def
-      :states 'normal
-      :keymaps '(ruby-mode-map robe-mode-map)
-      ;; from ruby-mode
-      " i e" #'ruby-indent-exp
-      " s d" #'smie-down-list
-      " b b" #'ruby-beginning-of-block
-      " b e" #'ruby-end-of-block
-      " b t" #'ruby-toggle-block
-      " b q" #'ruby-toggle-string-quotes
-      " f l" #'ruby-find-library-file
-
-      ;; from robe-mode
-      " g"   #'robe-jump
-      " d"   #'robe-doc
-      " r r" #'robe-rails-refresh
-
-      ;; from inf-ruby
-      " e d" #'ruby-send-definition
-      ;;#'ruby-send-definition-and-go
-      " e l" #'ruby-send-last-stmt
-      " e s" #'ruby-send-block
-      ;;#'ruby-send-block-and-go
-      " e r" #'ruby-send-region
-      ;;#'ruby-send-region-and-go
-      ;;#'ruby-switch-to-inf
-      " r F" #'ruby-load-file
-      " r f" #'ruby-load-current-file
-      " '" #'inf-ruby-start-pry))
-
-  (add-hook 'ruby-mode-hook 'robe-mode)
-  (add-hook 'ruby-mode-hook 'my-ruby-mode-robe-keybindings))
+  (setq lsp-ui-sideline-enable t
+        lsp-ui-doc-enable t
+        lsp-ui-imenu-enable t
+        lsp-ui-sideline-show-hover t
+        lsp-ui-sideline-update-mode 'point))
 
 (use-package rspec-mode
   :straight t
@@ -2125,6 +2108,25 @@ to that buffer. Otherwise create a new buffer with Pry."
 (require 'chruby)
 
 ;; =======================
+;; Zig Configuration
+;; =======================
+;;
+
+(use-package zig-mode
+  :straight t
+  :config
+  (defun my-zig-mode-keybindings ()
+    (my-local-leader-def
+      :states 'normal
+      :keymaps '(zig-mode-map)
+      " e c" #'zig-compile
+      " e r" #'zig-run
+      " f b" #'zig-format-buffer
+      " t t" #'zig-test-buffer))
+  (add-hook 'zig-mode-hook 'my-zig-mode-keybindings))
+
+;;; test.el --- Description
+;; =======================
 ;; Test Framework
 ;; =======================
 ;;
@@ -2141,6 +2143,7 @@ to that buffer. Otherwise create a new buffer with Pry."
   "Jump to a section in the single.el file based on fuzzy matching."
   (interactive)
   (let* ((sections '("Setup Configuration"
+                     "Theme"
                      "Compatibility Layer"
                      "Evil Mode Configuration"
                      "General Keybindings"
@@ -2181,6 +2184,7 @@ to that buffer. Otherwise create a new buffer with Pry."
                      "OCaml Configuration"
                      "Poke Configuration"
                      "Ruby Configuration"
+                     "Zig Configuration"
                      "Miscellaneous"
                      "Test Framework"
                      "Core Configuration"))
