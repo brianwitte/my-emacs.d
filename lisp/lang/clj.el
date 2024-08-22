@@ -2,10 +2,6 @@
 
 ;;; clj.el --- Clojure Development Configuration
 
-;; Ensure use-package is available
-(eval-when-compile
-  (require 'use-package))
-
 (use-package cider
   :straight t
   :config
@@ -18,8 +14,7 @@
       " c"  #'cider-connect-clj
       " C"  #'cider-connect-cljs
       " m"  #'cider-macroexpand-1
-      " M"  #'cider-macroexpand-all
-      ;; Debug
+      " M"  #'cider-macroexpand-all ;; Debug
       " d d" #'cider-debug-defun-at-point
       ;; Eval
       " e b" #'cider-eval-buffer
@@ -77,6 +72,12 @@
   (add-hook 'clojure-mode-hook 'my-clojure-mode-cider-keybindings)
   (add-hook 'clojurescript-mode-hook 'my-clojure-mode-cider-keybindings)
   (add-hook 'clojurec-mode-hook 'my-clojure-mode-cider-keybindings))
+
+
+(require 'reformatter)
+(reformatter-define zprint
+  :program "zprint-clj"
+  :lighter " ZprintCLJ")
 
 (provide 'emx-clj)
 

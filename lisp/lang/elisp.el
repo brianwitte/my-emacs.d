@@ -2,6 +2,7 @@
 ;;;
 ;;; elisp.el --- Description
 
+
 (defun eval-last-sexp-and-show-temporarily ()
   "Evaluate the sexp before the point and momentarily display the result."
   (interactive)
@@ -53,6 +54,5 @@
           "fixed")
   :lighter " Elatto")
 
-(add-hook 'emacs-lisp-mode-hook 'setup-elisp-mode-keys)
 
 (provide 'emx-elisp)

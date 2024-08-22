@@ -78,14 +78,6 @@ to that buffer. Otherwise create a new buffer with Pry."
   ;; Configurations, keybindings, etc.
   )
 
-(use-package rbenv
-  :straight t
-  :init
-  (setenv "RBENV_ROOT" "/opt/homebrew")
-  :config
-  ;; (global-rbenv-mode)
-  )
-
 (require 'reformatter)
 (reformatter-define rubyfmt
   :program "rubyfmt"
@@ -106,5 +98,14 @@ to that buffer. Otherwise create a new buffer with Pry."
   (interactive)
   (projectile-rails-console)
   (get-buffer "*Rails*"))
+
+;; load local chruby package
+(load (expand-file-name
+       ".config/emacs/lisp/packages/chruby"
+       gnus-home-directory))
+
+;; then require it
+(require 'chruby)
+
 
 (provide 'emx-ruby)

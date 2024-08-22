@@ -2,6 +2,12 @@
 ;;
 ;;; sexp.el -- s-expression editing
 
+(use-package smartparens
+  :straight t
+  :hook (prog-mode text-mode markdown-mode)
+  :config
+  (require 'smartparens-config))
+
 (defun my-sexp-keybindings ()
   (my-leader-def
     :keymaps 'normal
