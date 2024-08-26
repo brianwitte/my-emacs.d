@@ -169,7 +169,6 @@
     "ff" 'find-file
     "fs" 'save-buffer
     ;; Buffers
-    "bs" 'fzf-switch-buffer
     "bb" 'switch-to-buffer
     "bd" 'kill-buffer
     "bi" 'ibuffer
@@ -177,7 +176,7 @@
     ": " 'execute-extended-command
     ;; Projectile keybindings
     "p p" 'projectile-switch-project
-    "SPC" 'fzf-projectile
+    "SPC" 'projectile-find-file
     ;; More projectile
     "p r" 'projectile-recentf
     "p b" 'projectile-switch-to-buffer
@@ -353,21 +352,6 @@
 ;;;
 ;;; base/nav.el --- Description
 
-(use-package fzf
-  :bind
-  ;; Don't forget to set keybinds!
-  :config
-  (setq fzf/args "-x --color bw --print-query --margin=1,0 --no-hscroll"
-        fzf/executable "fzf"
-        fzf/git-grep-args "-i --line-number %s"
-        ;; command used for `fzf-grep-*` functions
-        ;; example usage for ripgrep:
-        ;; fzf/grep-command "rg --no-heading -nH"
-        fzf/grep-command "grep -nrH"
-        ;; If nil, the fzf buffer will appear at the top of the window
-        fzf/position-bottom t
-        fzf/window-height 15))
-
 (use-package corfu
   ;; Optional customizations
   :custom
@@ -404,6 +388,8 @@
   :init
   ;; TAB cycle if there are only few candidates
   (setq completion-cycle-threshold 3)
+  (setq-default truncate-lines t)
+
 
   ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
   ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
@@ -561,6 +547,11 @@
                  nil
                  (window-parameters (mode-line-format . none)))))
 
+(use-package embark-consult
+  :ensure t ; only need to install it, embark loads it after consult if found
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
  (use-package avy
     :demand t
     :init
@@ -674,14 +665,6 @@ parses its input."
   )
 
 
-(use-package swiper
-  :straight t
-  :config
-  (my-leader-def
-    :keymaps 'normal
-    "ss" 'swiper))
-
-
 (use-package treemacs
   :straight t
   :config
@@ -689,15 +672,29 @@ parses its input."
     :keymaps 'normal
     "op" 'treemacs))
 
-(use-package ripgrep
+(use-package consult
   :straight t
+  :bind
+  (("C-s" . consult-line)              ;; Search within the current buffer
+   ("C-x b" . consult-buffer)          ;; Switch buffers
+   ("M-y" . consult-yank-pop)          ;; Show kill-ring
+   ("M-g g" . consult-goto-line)       ;; Go to line
+   ("M-g M-g" . consult-goto-line))    ;; Alternative binding for go to line
   :config
   (my-leader-def
     :keymaps 'normal
-    "re" 'ripgrep-regexp
-    "rg" 'projectile-ripgrep))
+    "re" 'consult-ripgrep            ;; Search for a regexp in the project
+    "rg" 'consult-ripgrep            ;; Same as above (project-wide ripgrep)
 
-
+    "rf" 'consult-find               ;; Find a file in the current directory
+    "ss" 'consult-line               ;; Search for a line in the current buffer
+    "," 'consult-buffer             ;; Switch buffers
+    "rm" 'consult-mode-command       ;; List and execute major/minor mode commands
+    "ro" 'consult-outline            ;; Search outline headings
+    "ri" 'consult-imenu              ;; Search for definitions in the current buffer
+    "rk" 'consult-flymake            ;; Show Flymake diagnostics
+    "rs" 'consult-locate             ;; Locate files using the locate command
+))
 
 ;; dired stuff
 (with-eval-after-load 'dired
@@ -2122,7 +2119,8 @@ to that buffer. Otherwise create a new buffer with Pry."
       " e c" #'zig-compile
       " e r" #'zig-run
       " f b" #'zig-format-buffer
-      " t t" #'zig-test-buffer))
+      " t t" #'zig-test-buffer)
+    )
   (add-hook 'zig-mode-hook 'my-zig-mode-keybindings))
 
 ;;; test.el --- Description
@@ -2199,3 +2197,10 @@ to that buffer. Otherwise create a new buffer with Pry."
           (recenter 2)
           (message "Jumped to %s" chosen-section))
       (message "Section not found: %s" chosen-section))))
+
+(defun emacs-config-keybindings ()
+  (my-leader-def
+    :states 'normal
+    "e j" #'jump-to-config-section))
+
+(emacs-config-keybindings)
