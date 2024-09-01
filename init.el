@@ -672,29 +672,26 @@ parses its input."
     :keymaps 'normal
     "op" 'treemacs))
 
-(use-package consult
+(use-package ripgrep
   :straight t
-  :bind
-  (("C-s" . consult-line)              ;; Search within the current buffer
-   ("C-x b" . consult-buffer)          ;; Switch buffers
-   ("M-y" . consult-yank-pop)          ;; Show kill-ring
-   ("M-g g" . consult-goto-line)       ;; Go to line
-   ("M-g M-g" . consult-goto-line))    ;; Alternative binding for go to line
   :config
   (my-leader-def
     :keymaps 'normal
-    "re" 'consult-ripgrep            ;; Search for a regexp in the project
-    "rg" 'consult-ripgrep            ;; Same as above (project-wide ripgrep)
+    "rg" 'projectile-ripgrep))
 
-    "rf" 'consult-find               ;; Find a file in the current directory
-    "ss" 'consult-line               ;; Search for a line in the current buffer
-    "," 'consult-buffer             ;; Switch buffers
-    "rm" 'consult-mode-command       ;; List and execute major/minor mode commands
-    "ro" 'consult-outline            ;; Search outline headings
-    "ri" 'consult-imenu              ;; Search for definitions in the current buffer
-    "rk" 'consult-flymake            ;; Show Flymake diagnostics
-    "rs" 'consult-locate             ;; Locate files using the locate command
-))
+(use-package consult
+  :straight t
+  :config
+  (my-leader-def
+    :keymaps 'normal
+    "rf" 'consult-find            
+    "ss" 'consult-line           
+    "," 'consult-buffer          
+    "rm" 'consult-mode-command   
+    "ro" 'consult-outline        
+    "ri" 'consult-imenu  
+    "rk" 'consult-flymake        
+    "rs" 'consult-locate))
 
 ;; dired stuff
 (with-eval-after-load 'dired
