@@ -677,6 +677,7 @@ parses its input."
   :config
   (my-leader-def
     :keymaps 'normal
+    "rg" 'ripgrep
     "rg" 'projectile-ripgrep))
 
 (use-package consult
@@ -684,13 +685,13 @@ parses its input."
   :config
   (my-leader-def
     :keymaps 'normal
-    "rf" 'consult-find            
-    "ss" 'consult-line           
-    "," 'consult-buffer          
-    "rm" 'consult-mode-command   
-    "ro" 'consult-outline        
-    "ri" 'consult-imenu  
-    "rk" 'consult-flymake        
+    "rf" 'consult-find
+    "ss" 'consult-line
+    "," 'consult-buffer
+    "rm" 'consult-mode-command
+    "ro" 'consult-outline
+    "ri" 'consult-imenu
+    "rk" 'consult-flymake
     "rs" 'consult-locate))
 
 ;; dired stuff
@@ -1718,6 +1719,18 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (setq projectile-tags-backend nil
         projectile-tags-command nil
         projectile-tags-file-name "tags"))
+
+(defun remove-log-debug-statements ()
+  "Remove all lines containing log_debug statements in C files."
+  (interactive)
+  (when (derived-mode-p 'c-mode 'c++-mode)
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "log_debug(" nil t)
+        (let ((start (match-beginning 0)))
+          (if (search-forward ";" nil t)
+              (delete-region start (point))))))))
+
 
 ;; Code formatting with reformatter for consistent coding style
 (require 'reformatter)
