@@ -1679,6 +1679,26 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 
 (add-hook 'emacs-lisp-mode-hook 'setup-elisp-mode-keys)
 
+
+;; =======================
+;; Shell Script Configuration
+;; =======================
+
+;; Make sure 'shfmt' is in your PATH and you have the following options:
+;; - -i 4: Use 4 spaces for indentation.
+;; - -ci: Indent switch cases.
+;; - -bn: Place binary operators like && and | at the start of a new line.
+;; - -sr: Place a space before redirect operators.
+;; - -kp: Keep column alignment padding.
+;; - -fn: Place function opening braces on a new line.
+
+(require 'reformatter)
+(reformatter-define shfmt
+  :program "shfmt"
+  :args '("-i" "4" "-ci" "-bn" "-sr" "-kp")
+  :lighter " shfmt")
+
+
 ;; =======================
 ;; C/C++ Configuration
 ;; =======================
@@ -2214,3 +2234,52 @@ to that buffer. Otherwise create a new buffer with Pry."
     "e j" #'jump-to-config-section))
 
 (emacs-config-keybindings)
+
+
+;; RANDOM STUFF BELOW
+
+(defun insert-ascii-main-comment ()
+  "Insert an ASCII art comment block for 'main' with explanation."
+  (interactive)
+  (insert "##################################################\n")
+  (insert "#                  _\n")
+  (insert "#                 (_)\n")
+  (insert "#  _ __ ___   __ _ _ _ __\n")
+  (insert "# | '_ ` _ \\ / _` | | '_ \\\n")
+  (insert "# | | | | | | (_| | | | | |\n")
+  (insert "# |_| |_| |_|\\__,_|_|_| |_|\n")
+  (insert "#\n")
+  (insert "##################################################\n")
+  (insert "# CHANGEME - explain what this \"main\" does\n")
+  (insert "##################################################\n"))
+
+
+
+;; Now you can bind this function to a key combination if desired
+
+
+(require 'url)  ;; Ensure url functionality is available
+
+(defun download-file (url destination)
+  "Download a file from the given URL and save it to the DESTINATION path."
+  (with-current-buffer (url-retrieve-synchronously url)
+    (goto-char (point-min))
+    (re-search-forward "\n\n") ;; Skip the HTTP headers
+    (write-region (point) (point-max) destination)))
+
+(defun get-files-sh (directory)
+  "Download the 'files.sh' script to the DIRECTORY of your choosing."
+  (interactive "DSelect destination directory: ")
+  (let ((url "https://gist.githubusercontent.com/brianwitte/cb133e044bbd8f45a178a8b6c6b95112/raw/6229c86bb5ed063ad55c511981d4fc32ca605fb5/files.sh")
+        (destination (concat (file-name-as-directory directory) "files.sh")))
+    (download-file url destination)
+    (message "Downloaded files.sh to %s" destination)))
+
+(defun get-license-rb (directory)
+  "Download the 'license.rb' script to the DIRECTORY of your choosing."
+  (interactive "DSelect destination directory: ")
+  (let ((url "https://gist.githubusercontent.com/brianwitte/96e22d09347e34e689166501d48ab0f4/raw/be80b96a0ddc8f427bf8600b0a314b53167c5be7/license.rb")
+        (destination (concat (file-name-as-directory directory) "license.rb")))
+    (download-file url destination)
+    (message "Downloaded license.rb to %s" destination)))
+
