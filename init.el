@@ -161,7 +161,6 @@
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
     :global-prefix "C-SPC"))
-
 (defun my-core-normal-keybindings ()
   (my-leader-def
     :keymaps 'normal
@@ -177,7 +176,6 @@
     ;; Projectile keybindings
     "p p" 'projectile-switch-project
     "SPC" 'projectile-find-file
-    ;; More projectile
     "p r" 'projectile-recentf
     "p b" 'projectile-switch-to-buffer
     "p c" 'projectile-compile-project
@@ -186,25 +184,49 @@
     "p d" 'projectile-find-dir
     "p d" 'projectile-dired
     "p R" 'projectile-regenerate-tags
+    ;; LSP
+    "l l"  #'lsp
+    "l \"" #'lsp-workspace-restart
+    "l q"  #'lsp-workspace-shutdown
     ;; Code Actions
-    "l a"  'lsp-execute-code-action
-    ;; Refactoring
-    "l r r" 'lsp-rename
-    ;; Help/Documentation
-    "l h d" 'lsp-describe-thing-at-point
+    "l a"  #'lsp-execute-code-action
+    "l A"  #'lsp-organize-imports
+    ;; Diagnostics
+    "l d d" #'lsp-ui-flycheck-list
+    "l d n" #'flycheck-next-error
+    "l d p" #'flycheck-previous-error
+    "l d f" #'flycheck-buffer
+    ;;  Format
+    "l f b" #'lsp-format-buffer
+    "l f r" #'lsp-format-region
     ;; Goto
-    "l g t" 'lsp-goto-type-definition
-    "l g i" 'lsp-goto-implementation
-    ;; Workspace/Project
-    "l r R" 'lsp-restart-workspace
-    ;; Formatting
-    "l f b" 'lsp-format-buffer
-    ;; Highlight Symbol
-    "l h l" 'lsp-symbol-highlight
-    ;; Workspace Folders
-    "l w a" 'lsp-workspace-folders-add
-    "l w r" 'lsp-workspace-folders-remove
+    "l g d" #'lsp-find-definition
+    "l g r" #'lsp-find-references
+    "l g i" #'lsp-find-implementation
+    "l g t" #'lsp-find-type-definition
+    "l g o" #'lsp-describe-session
+    ;; Help
+    "l h d" #'lsp-describe-thing-at-point
+    "l h s" #'lsp-signature-help
+    "l h t" #'lsp-treemacs-symbols
+    ;; Rename
+    "l r r" #'lsp-rename
+    ;;  Imenu and Outline
+    "l i i" #'lsp-ui-imenu
+    "l i o" #'lsp-treemacs-outline
+    ;; Peek
+    "l p d" #'lsp-ui-peek-find-definitions
+    "l p r" #'lsp-ui-peek-find-references
+    "l p i" #'lsp-ui-peek-find-implementation
+    ;; Workspace
+    "l w a" #'lsp-workspace-folders-add
+    "l w r" #'lsp-workspace-folders-remove
+    "l w l" #'lsp-workspace-folders-list
     "l w s" 'lsp-workspace-folders-switch
+    ;; Miscellaneous
+    "l m s" #'lsp-restart-workspace
+    "l m l" #'lsp-toggle-trace-io
+    "l m t" #'lsp-clients-debug-info
     ))
 
 (defun my-core-visual-keybindings ()
@@ -532,7 +554,7 @@
   :general
   (my/leader-keys
      "." 'embark-act) ;; easily accessible 'embark-act' binding.
-  ("C-." 'embark-act) ;; overlaps with evil-repeat 
+  ("C-." 'embark-act) ;; overlaps with evil-repeat
   ("C-;" 'embark-dwim) ;; overlaps with IEdit
   (:keymaps 'vertico-map
             "C-." 'embark-act) ;; embark on completion candidates
@@ -896,6 +918,108 @@ parses its input."
 ;; =======================
 ;;
 
+(use-package meson-mode
+  :straight t
+  :mode ("meson.build\\'" . meson-mode)
+  :config
+  (setq meson-mode-indent-level 2))
+
+
+;; Dependencies for ANSI color handling
+(require 'ansi-color)
+
+;; Colorize compilation buffer with ANSI colors
+(defun endless/colorize-compilation ()
+  "Colorize from `compilation-filter-start' to `point'."
+  (let ((inhibit-read-only t))
+    (ansi-color-apply-on-region
+     compilation-filter-start (point))))
+
+;; Filter out unwanted ANSI escape sequences
+(defun regexp-alternatives (regexps)
+  "Return the alternation of a list of regexps."
+  (mapconcat (lambda (regexp)
+               (concat "\\(?:" regexp "\\)"))
+             regexps "\\|"))
+
+(defvar non-sgr-control-sequence-regexp nil
+  "Regexp that matches non-SGR control sequences.")
+
+(setq non-sgr-control-sequence-regexp
+      (regexp-alternatives
+       '(;; Icon name escape sequences
+         "\033\\][0-2];.*?\007"
+         ;; Non-SGR CSI escape sequences
+         "\033\\[\\??[0-9;]*[^0-9;m]"
+         ;; No-op sequences
+         "\012\033\\[2K\033\\[1F"
+         )))
+
+(defun filter-non-sgr-control-sequences-in-region (begin end)
+  "Filter out non-SGR control sequences in region from BEGIN to END."
+  (save-excursion
+    (goto-char begin)
+    (while (re-search-forward
+            non-sgr-control-sequence-regexp end t)
+      (replace-match ""))))
+
+(defun filter-non-sgr-control-sequences-in-output (ignored)
+  "Filter non-SGR control sequences in the current comint or compilation output."
+  (let ((start-marker
+         (or comint-last-output-start
+             (point-min-marker)))
+        (end-marker
+         (process-mark
+          (get-buffer-process (current-buffer)))))
+    (filter-non-sgr-control-sequences-in-region
+     start-marker
+     end-marker)))
+
+;; Hook to clean and colorize compilation output
+(defun clean-and-colorize-compilation-buffer ()
+  "Clean and colorize the compilation buffer."
+  (endless/colorize-compilation)
+  (filter-non-sgr-control-sequences-in-region
+   compilation-filter-start (point)))
+
+;; Add hooks to handle compilation output
+(add-hook 'compilation-filter-hook
+          #'clean-and-colorize-compilation-buffer)
+
+;; If you want the filter to also work in comint-based modes (e.g., shell):
+(add-hook 'comint-output-filter-functions
+          #'filter-non-sgr-control-sequences-in-output)
+
+(use-package compile
+  :straight (:type built-in)
+  :hook ((compilation-mode . (lambda ()
+                               (setq truncate-lines nil)))
+         (compilation-filter . clean-and-colorize-compilation-buffer))
+  :config
+  (defun compilation-wrap ()
+    "Toggle line wrapping or truncation in the current compilation buffer."
+    (interactive)
+    (if (derived-mode-p 'compilation-mode)
+        (progn
+          (setq truncate-lines (not truncate-lines))
+          (if truncate-lines
+              (message "Truncation enabled for compilation buffer.")
+            (message "Line wrapping enabled for compilation buffer.")))
+      (message "This function works only in compilation-mode buffers.")))
+
+  ;; Disable the mode line header in compilation buffers
+  (setq-default compilation-mode-line-errors nil)
+  ;; Remove default header text in the compilation buffer
+  (setq compilation-window-height 20)
+  (setq compilation-scroll-output t)
+  (define-key compilation-mode-map (kbd "C-c w") 'compilation-wrap)
+  (add-hook 'compilation-start-hook
+            (lambda (proc)
+              ;; Automatically truncate lines in the compilation buffer
+              (with-current-buffer (process-buffer proc)
+                (setq truncate-lines t)))))
+
+
 ;; =======================
 ;; CI/CD Configuration
 ;; =======================
@@ -1043,6 +1167,24 @@ parses its input."
            output-buf)
           (pop-to-buffer output-buf))
       (message "Not inside a Git repository."))))
+
+
+(defun gitui ()
+  "Run gitui in a new buffer."
+  (interactive)
+  (let ((buffer-name "*gitui*"))
+    (if (get-buffer buffer-name)
+        (kill-buffer buffer-name))  ; Kill existing gitui buffer if it exists
+    (if (fboundp 'vterm)  ; Check if vterm is available
+        (progn
+          (vterm buffer-name)
+          (vterm-send-string "gitui")
+          (vterm-send-return))
+      (progn
+        (ansi-term "/bin/bash" buffer-name)
+        (term-send-raw-string "gitui\n")))))
+
+
 
 ;; =======================
 ;; Web Browsing
@@ -1418,6 +1560,8 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 ;;  lsp-zig
 ;;  lsp-jq)
 
+
+
 (use-package treesit-auto
   :straight t
   :custom
@@ -1449,84 +1593,6 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (interactive)
   (pulse-momentary-highlight-one-line (point) 'region))
 
-(use-package lsp-mode
-  :straight t
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  :hook ((java-mode       ; eclipse-jdtls
-          tsx-ts-mode
-          typescript-ts-mode
-          js-ts-mode) . lsp-deferred)
-  :preface
-  (defun my/lsp-execute-code-action ()
-    "Execute code action with pulse-line animation."
-    (interactive)
-    (my/pulse-line)
-    (call-interactively 'lsp-execute-code-action))
-  :custom-face
-  (lsp-headerline-breadcrumb-symbols-face                ((t (:inherit variable-pitch))))
-  (lsp-headerline-breadcrumb-path-face                   ((t (:inherit variable-pitch))))
-  (lsp-headerline-breadcrumb-project-prefix-face         ((t (:inherit variable-pitch))))
-  (lsp-headerline-breadcrumb-unknown-project-prefix-face ((t (:inherit variable-pitch))))
-  :commands lsp
-  :config
-  (add-hook 'java-mode-hook #'(lambda () (when (eq major-mode 'java-mode) (lsp-deferred))))
-  (global-unset-key (kbd "<f2>"))
-  (define-key lsp-mode-map (kbd "<f2>") #'lsp-rename)
-  (setq lsp-auto-guess-root t)
-  (setq lsp-log-io nil)
-  (setq lsp-restart 'auto-restart)
-  (setq lsp-enable-links nil)
-  (setq lsp-enable-symbol-highlighting nil)
-  (setq lsp-enable-on-type-formatting nil)
-  (setq lsp-lens-enable nil)
-  (setq lsp-signature-auto-activate nil)
-  (setq lsp-signature-render-documentation nil)
-  (setq lsp-eldoc-enable-hover nil)
-  (setq lsp-eldoc-hook nil)
-  (setq lsp-modeline-code-actions-enable nil)
-  (setq lsp-modeline-diagnostics-enable nil)
-  (setq lsp-headerline-breadcrumb-enable nil)
-  (setq lsp-headerline-breadcrumb-icons-enable nil)
-  (setq lsp-semantic-tokens-enable nil)
-  (setq lsp-enable-folding nil)
-  (setq lsp-enable-imenu nil)
-  (setq lsp-enable-snippet nil)
-  (setq lsp-enable-file-watchers nil)
-  (setq lsp-keep-workspace-alive nil)
-  (setq read-process-output-max (* 1024 1024)) ;; 1MB
-  (setq lsp-idle-delay 0.25)
-  (setq lsp-auto-execute-action nil)
-  )
-
-(use-package lsp-ui
-  :commands lsp-ui-mode
-  :custom-face
-  (lsp-ui-sideline-global ((t (:italic t))))
-  (lsp-ui-peek-highlight  ((t (:foreground unspecified :background unspecified :inherit isearch))))
-  :config
-  (with-eval-after-load 'evil
-    (add-hook 'buffer-list-update-hook
-              #'(lambda ()
-                  (when (bound-and-true-p lsp-ui-mode)
-                    (evil-define-key '(motion normal) 'local (kbd "K")
-                      #'(lambda () (interactive) (lsp-ui-doc-glance) (my/pulse-line)))))))
-  (setq lsp-ui-doc-enable nil)
-  (setq lsp-ui-doc-show-with-mouse nil)
-  (setq lsp-ui-doc-enhanced-markdown nil)
-  (setq lsp-ui-doc-delay 0.01)
-  (when (display-graphic-p)
-    (setq lsp-ui-doc-use-childframe t)
-    (setq lsp-ui-doc-text-scale-level -1.0)
-    (setq lsp-ui-doc-max-width 80)
-    (setq lsp-ui-doc-max-height 25)
-    (setq lsp-ui-doc-position 'at-point))
-  (setq lsp-ui-doc-include-signature t)
-  (setq lsp-ui-doc-border (face-foreground 'font-lock-comment-face))
-  (setq lsp-ui-sideline-diagnostic-max-line-length 80)
-  (setq lsp-ui-sideline-diagnostic-max-lines 2)
-  (setq lsp-ui-peek-always-show t)
-  (setq lsp-ui-sideline-delay 0.05))
 
 (use-package reformatter
   :straight t)
@@ -1554,45 +1620,6 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (setq jq-interactive-command "jq"
         jq-interactive-default-options ""))
 
-;; =======================
-;; LSP Configuration
-;; =======================
-;;
-;;; lsp.el --- Description
-
-(use-package lsp-mode
-  :straight t)
-
-(use-package lsp-ui
-  :commands lsp-ui-mode
-  :custom-face
-  (lsp-ui-sideline-global ((t (:italic t))))
-  (lsp-ui-peek-highlight
-   ((t (:foreground unspecified :background unspecified :inherit isearch))))
-  :config
-  (with-eval-after-load 'evil
-    (add-hook
-     'buffer-list-update-hook
-     #'(lambda ()
-         (when (bound-and-true-p lsp-ui-mode)
-           (evil-define-key '(motion normal) 'local (kbd "K")
-             #'(lambda () (interactive) (lsp-ui-doc-glance) (my/pulse-line)))))))
-  (setq lsp-ui-doc-enable nil)
-  (setq lsp-ui-doc-show-with-mouse nil)
-  (setq lsp-ui-doc-enhanced-markdown nil)
-  (setq lsp-ui-doc-delay 0.01)
-  (when (display-graphic-p)
-    (setq lsp-ui-doc-use-childframe t)
-    (setq lsp-ui-doc-text-scale-level -1.0)
-    (setq lsp-ui-doc-max-width 80)
-    (setq lsp-ui-doc-max-height 25)
-    (setq lsp-ui-doc-position 'at-point))
-  (setq lsp-ui-doc-include-signature t)
-  (setq lsp-ui-doc-border (face-foreground 'font-lock-comment-face))
-  (setq lsp-ui-sideline-diagnostic-max-line-length 80)
-  (setq lsp-ui-sideline-diagnostic-max-lines 2)
-  (setq lsp-ui-peek-always-show t)
-  (setq lsp-ui-sideline-delay 0.05))
 
 ;; =======================
 ;; Tree Sitter Configuration
@@ -1619,6 +1646,57 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 ;; =======================
+;; LSP Configuration
+;; =======================
+;;;
+
+;; Set up lsp-mode for Go and C
+(use-package lsp-mode
+  :straight t
+  :commands (lsp lsp-deferred)
+  :hook ((go-mode . lsp-deferred)  ;; Automatically start LSP for Go files
+         (c-mode . lsp-deferred)) ;; Automatically start LSP for C files
+  :config
+  (setq lsp-prefer-flymake nil) ;; Use flycheck instead of flymake
+  (setq lsp-idle-delay 0.5)     ;; Reduce delay for LSP response
+  (setq lsp-go-use-gofumpt t)   ;; Use gofumpt for Go formatting
+  ;; Configure clangd for C files
+  (setq lsp-clients-clangd-args '("--clang-tidy" "--completion-style=detailed" "--header-insertion=never"))
+  (add-to-list 'lsp-client-packages 'lsp-clangd))
+
+(use-package lsp-ui
+  :straight t
+  :after lsp-mode
+  :hook (lsp-mode . lsp-ui-mode)
+  :bind (:map lsp-ui-mode-map
+              ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+              ([remap xref-find-references] . lsp-ui-peek-find-references))
+  :custom
+  ;; Sideline settings
+  (lsp-ui-sideline-enable nil)
+  ;; (lsp-ui-sideline-show-diagnostics nil)
+  ;; (lsp-ui-sideline-show-hover nil)
+  ;; (lsp-ui-sideline-show-code-actions nil)
+  ;; (lsp-ui-sideline-update-mode 'line) ;; Update sideline info on line change
+  ;; (lsp-ui-sideline-delay 0.5)        ;; Delay before sideline info appears
+  ;; Peek settings
+  (lsp-ui-peek-enable t)
+  (lsp-ui-peek-show-directory t)    ;; Show directories in peek results
+  ;; Doc settings
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-position 'at-point)   ;; Position of the doc (top, bottom, at-point)
+  (lsp-ui-doc-delay 0.2)            ;; Delay before doc popup shows
+  (lsp-ui-doc-show-with-cursor t)   ;; Show doc when cursor is over a symbol
+  (lsp-ui-doc-show-with-mouse t)    ;; Show doc when mouse hovers over a symbol
+  ;; Imenu settings
+  (lsp-ui-imenu-auto-refresh t)     ;; Automatically refresh imenu
+  (lsp-ui-imenu-refresh-delay 0.5) ;; Delay before refreshing imenu
+  (lsp-ui-imenu-kind-position 'top) ;; Where to display kind (left, right)
+  (lsp-ui-imenu-buffer-position 'right) ;; Buffer position for imenu
+  (lsp-ui-imenu-window-width 50)   ;; Width of the imenu window
+  (lsp-ui-imenu-window-fix-width t)) ;; Fix width of imenu window
+
+;; =======================
 ;; Elisp Configuration
 ;; =======================
 ;;;
@@ -1630,11 +1708,10 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (interactive)
   ;; Evaluate the preceding sexp and get the result.
   (let*
-    (
-      (result (eval-last-sexp nil))
-      (result-string (format "\n;=> %S" result))
-      ;; The position to display the message at.
-      (display-pos (1+ (point))))
+      ((result (eval-last-sexp nil))
+       (result-string (format "\n;=> %S" result))
+       ;; The position to display the message at.
+       (display-pos (1+ (point))))
     ;; Use `momentary-string-display` to show the result temporarily.
     ;; By default, it will disappear with the next keystroke.
     (momentary-string-display result-string display-pos)))
@@ -1660,23 +1737,6 @@ FILE-MAP is a list of (NAME . PATH) pairs."
     'find-variable
     "gl"
     'find-library))
-
-(add-to-list 'exec-path (expand-file-name "fmt-bin" user-emacs-directory))
-
-(require 'reformatter)
-(reformatter-define elatto
-  :program (expand-file-name "elatto" (locate-user-emacs-file "fmt-bin"))
-  :args `("--stdin"
-          "--stdout"
-          "--fmt-defs-dir"
-          ,(expand-file-name "fmt-bin" user-emacs-directory)
-          "--fmt-defs"
-          "elatto.overrides.json"
-          "--fmt-style"
-          "fixed")
-  :lighter " Elatto")
-
-
 (add-hook 'emacs-lisp-mode-hook 'setup-elisp-mode-keys)
 
 
@@ -1705,57 +1765,46 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 
 ;;; cc.el --- Citre Configuration for C Modes
 
-(use-package citre
-  :straight t
-  :init
-  (require 'citre-config)  ; Required for lazy loading
-  :config
-  ;; Enable Citre integrations
-  (setq-default citre-enable-capf-integration t)
-
-  ;; Customize Citre's completion settings
-  (setq citre-completion-case-sensitive nil
-        citre-capf-substr-completion t
-        citre-capf-optimize-for-popup t)
-
-  ;; Local leader keybindings specific to citre-mode in c-mode
-  (add-hook 'c-mode-hook (lambda ()
-                           (citre-mode 1)  ; Enable Citre mode only in c-mode
-                           (my-local-leader-def
-                             :keymaps 'c-mode-map
-                             "g" 'citre-jump
-                             "G" 'citre-jump-back
-                             "p" 'citre-ace-peek
-                             "u" 'citre-update-this-tags-file)))
-
-  ;; Citre external tools configuration
-  (setq citre-ctags-program "/usr/bin/ctags-universal"
-        citre-project-root-function #'projectile-project-root
-        citre-use-project-root-when-creating-tags t
-        citre-prompt-language-for-ctags-command t
-        citre-auto-enable-citre-mode-modes nil)  ; No automatic enabling
-
-  ;; Disabling projectile's tags settings to avoid conflicts
-  (setq projectile-tags-backend nil
-        projectile-tags-command nil
-        projectile-tags-file-name "tags"))
-
-(defun remove-log-debug-statements ()
-  "Remove all lines containing log_debug statements in C files."
-  (interactive)
-  (when (derived-mode-p 'c-mode 'c++-mode)
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward "log_debug(" nil t)
-        (let ((start (match-beginning 0)))
-          (if (search-forward ";" nil t)
-              (delete-region start (point))))))))
+;; (use-package citre
+;;   :straight t
+;;   :init
+;;   (require 'citre-config)  ; Required for lazy loading
+;;   :config
+;;   ;; Enable Citre integrations
+;;   (setq-default citre-enable-capf-integration t)
+;;
+;;   ;; Customize Citre's completion settings
+;;   (setq citre-completion-case-sensitive nil
+;;         citre-capf-substr-completion t
+;;         citre-capf-optimize-for-popup t)
+;;
+;;   ;; Local leader keybindings specific to citre-mode in c-mode
+;;   (add-hook 'c-mode-hook (lambda ()
+;;                            (citre-mode 1)  ; Enable Citre mode only in c-mode
+;;                            (my-local-leader-def
+;;                              :keymaps 'c-mode-map
+;;                              "g" 'citre-jump
+;;                              "G" 'citre-jump-back
+;;                              "p" 'citre-ace-peek
+;;                              "u" 'citre-update-this-tags-file)))
+;;
+;;   ;; Citre external tools configuration
+;;   (setq citre-ctags-program "/usr/bin/ctags-universal"
+;;         citre-project-root-function #'projectile-project-root
+;;         citre-use-project-root-when-creating-tags t
+;;         citre-prompt-language-for-ctags-command t
+;;         citre-auto-enable-citre-mode-modes nil)  ; No automatic enabling
+;;
+;;   ;; Disabling projectile's tags settings to avoid conflicts
+;;   (setq projectile-tags-backend nil
+;;         projectile-tags-command nil
+;;         projectile-tags-file-name "tags"))
 
 
 ;; Code formatting with reformatter for consistent coding style
 (require 'reformatter)
 
-(reformatter-define kstyle 
+(reformatter-define kstyle
   :program "uncrustify"
   :args `("-c" ,(expand-file-name "~/src/uncrustify/etc/linux.cfg") "-l" "C")
   :lighter " kstyle")
@@ -1895,17 +1944,17 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 (use-package typescript-mode
   :straight t)
 
-(use-package lsp-mode
-  :straight t
-  :commands (lsp lsp-deferred)
-  :hook (typescript-ts-mode . lsp-deferred)
-  :init
-  (setq lsp-prefer-capf t)  ; Use `completion-at-point-functions', recommended for better performance
-  :config
-  (lsp-register-client
-    (make-lsp-client :new-connection (lsp-stdio-connection (lambda () '("vtsls" "--stdio")))
-                     :major-modes '(typescript-mode js-mode js2-mode js3-mode)
-                     :server-id 'vtsls)))
+;; (use-package lsp-mode
+;;   :straight t
+;;   :commands (lsp lsp-deferred)
+;;   :hook (typescript-ts-mode . lsp-deferred)
+;;   :init
+;;   (setq lsp-prefer-capf t)  ; Use `completion-at-point-functions', recommended for better performance
+;;   :config
+;;   (lsp-register-client
+;;     (make-lsp-client :new-connection (lsp-stdio-connection (lambda () '("vtsls" "--stdio")))
+;;                      :major-modes '(typescript-mode js-mode js2-mode js3-mode)
+;;                      :server-id 'vtsls)))
 
 (use-package typescript-ts-mode
   :straight t
@@ -1964,6 +2013,54 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 ;; #######################
 
 ;; =======================
+;; Go Configuration
+;; =======================
+
+
+(use-package go-mode
+  :straight t
+  :hook ((go-mode . lsp-deferred)
+         (go-mode . lsp-go-install-save-hooks)) ;; LSP save hooks for Go
+  :config
+  (defun lsp-go-install-save-hooks ()
+    "Set up before-save hooks for Go to format buffer and organize imports."
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t)))
+
+;; Set up go-eldoc for inline documentation
+(use-package go-eldoc
+  :straight t
+  :hook (go-mode . go-eldoc-setup)
+  :config
+  (setq go-eldoc-gocode "gopls")) ;; Use gopls for Go code intelligence
+
+;; Set up flycheck for Go
+(use-package flycheck
+  :straight t
+  :hook (go-mode . flycheck-mode) ;; Enable Flycheck only in go-mode
+  :config
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (setq flycheck-go-staticcheck-executable "staticcheck") ;; Ensure staticcheck is in PATH
+  ;; Add Flycheck backends specific to Go
+  (flycheck-define-checker go-staticcheck
+    "A Flycheck checker for Go using staticcheck."
+    :command ("staticcheck" "-f" "json" source)
+    :error-parser flycheck-parse-json
+    :error-filter
+    (lambda (errors)
+      (flycheck-sanitize-errors
+       (flycheck-increment-error-columns errors)))
+    :modes go-mode)
+  (add-to-list 'flycheck-checkers 'go-staticcheck))
+
+;; Optional: Ensure staticcheck is installed
+;; You can add this comment as a reminder for users:
+;; Install staticcheck via: `go install honnef.co/go/tools/cmd/staticcheck@latest`
+
+
+;; #######################
+
+;; =======================
 ;; OCaml Configuration
 ;; =======================
 
@@ -1996,33 +2093,33 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (lsp-organize-imports)
   (lsp-format-buffer))
 
-(use-package lsp-mode
-  :straight t
-  :after flycheck
-  :commands lsp
-  :bind (("C-c l n" . flycheck-next-error)
-         ("C-c l d" . lsp-find-definition)
-         ("C-c l r" . lsp-find-references)
-         ("C-c l h" . lsp-describe-thing-at-point)
-         ("C-c l i" . lsp-find-implementation)
-         ("C-c l R" . lsp-rename)
-         ("C-c l o" . my-lsp-fix-buffer))
-  :hook ((tuareg-mode . lsp)
-         (caml-mode . lsp)
-         (reason-mode . lsp)
-         (before-save . lsp-organize-imports))
-  :custom
-  (lsp-lens-enable t)
-  (lsp-log-io nil)
-  (lsp-headerline-breadcrumb-enable nil)
-  :config
-  (lsp-enable-which-key-integration t)
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection
-                     '("opam" "exec" "--" "ocamllsp"))
-    :major-modes '(caml-mode tuareg-mode reason-mode)
-    :server-id 'ocamllsp)))
+;; (use-package lsp-mode
+;;   :straight t
+;;   :after flycheck
+;;   :commands lsp
+;;   :bind (("C-c l n" . flycheck-next-error)
+;;          ("C-c l d" . lsp-find-definition)
+;;          ("C-c l r" . lsp-find-references)
+;;          ("C-c l h" . lsp-describe-thing-at-point)
+;;          ("C-c l i" . lsp-find-implementation)
+;;          ("C-c l R" . lsp-rename)
+;;          ("C-c l o" . my-lsp-fix-buffer))
+;;   :hook ((tuareg-mode . lsp)
+;;          (caml-mode . lsp)
+;;          (reason-mode . lsp)
+;;          (before-save . lsp-organize-imports))
+;;   :custom
+;;   (lsp-lens-enable t)
+;;   (lsp-log-io nil)
+;;   (lsp-headerline-breadcrumb-enable nil)
+;;   :config
+;;   (lsp-enable-which-key-integration t)
+;;   (lsp-register-client
+;;    (make-lsp-client
+;;     :new-connection (lsp-stdio-connection
+;;                      '("opam" "exec" "--" "ocamllsp"))
+;;     :major-modes '(caml-mode tuareg-mode reason-mode)
+;;     :server-id 'ocamllsp)))
 
 ;; This uses Merlin internally
 (use-package flycheck-ocaml
@@ -2050,18 +2147,18 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 
 ;;; ruby.el --- Description
 
-(use-package lsp-mode
-  :straight t
-  :commands (lsp lsp-deferred)
-  :hook ((ruby-mode . lsp-deferred))
-  :init
-  (setq lsp-enable-snippet nil  ;; Disable snippets
-        lsp-enable-symbol-highlighting nil  ;; Disable symbol highlighting
-        lsp-enable-text-document-color nil  ;; Disable text document color
-        lsp-enable-on-type-formatting nil  ;; Disable auto formatting
-        lsp-enable-indentation nil  ;; Disable indentation
-        lsp-diagnostics-provider :none)
-  )  ;; Disable diagnostics
+;;(use-package lsp-mode
+;;  :straight t
+;;  :commands (lsp lsp-deferred)
+;;  :hook ((ruby-mode . lsp-deferred))
+;;  :init
+;;  (setq lsp-enable-snippet nil  ;; Disable snippets
+;;        lsp-enable-symbol-highlighting nil  ;; Disable symbol highlighting
+;;        lsp-enable-text-document-color nil  ;; Disable text document color
+;;        lsp-enable-on-type-formatting nil  ;; Disable auto formatting
+;;        lsp-enable-indentation nil  ;; Disable indentation
+;;        lsp-diagnostics-provider :none)
+;;  )  ;; Disable diagnostics
 
 
 (use-package inf-ruby
@@ -2082,16 +2179,16 @@ to that buffer. Otherwise create a new buffer with Pry."
         ruby-exec
       (error "ruby-lsp not found in ~/.rubies/3.1.3"))))
 
-(use-package lsp-ui
-  :straight t
-  :commands lsp-ui-mode
-  :after lsp-mode
-  :config
-  (setq lsp-ui-sideline-enable t
-        lsp-ui-doc-enable t
-        lsp-ui-imenu-enable t
-        lsp-ui-sideline-show-hover t
-        lsp-ui-sideline-update-mode 'point))
+;; (use-package lsp-ui
+;;   :straight t
+;;   :commands lsp-ui-mode
+;;   :after lsp-mode
+;;   :config
+;;   (setq lsp-ui-sideline-enable t
+;;         lsp-ui-doc-enable t
+;;         lsp-ui-imenu-enable t
+;;         lsp-ui-sideline-show-hover t
+;;         lsp-ui-sideline-update-mode 'point))
 
 (use-package rspec-mode
   :straight t
@@ -2282,4 +2379,3 @@ to that buffer. Otherwise create a new buffer with Pry."
         (destination (concat (file-name-as-directory directory) "license.rb")))
     (download-file url destination)
     (message "Downloaded license.rb to %s" destination)))
-
