@@ -154,6 +154,14 @@
 ;;;
 ;;; base/general.el --- Description
 
+
+(defun downcase-current-line ()
+  "Downcase the entire current line."
+  (interactive)
+  (let ((start (line-beginning-position))
+        (end (line-end-position)))
+    (downcase-region start end)))
+
 (use-package general
   :straight t
   :config
@@ -173,6 +181,8 @@
     "bi" 'ibuffer
     ;; Commands
     ": " 'execute-extended-command
+    ;; Downcase
+    "d l" 'downcase-current-line
     ;; Projectile keybindings
     "p p" 'projectile-switch-project
     "SPC" 'projectile-find-file
@@ -1654,13 +1664,16 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 (use-package lsp-mode
   :straight t
   :commands (lsp lsp-deferred)
-  :hook ((go-mode . lsp-deferred)  ;; Automatically start LSP for Go files
-         (c-mode . lsp-deferred)) ;; Automatically start LSP for C files
+  :hook ((java-mode . lsp-deferred)
+         (go-mode . lsp-deferred)
+         (c-mode . lsp-deferred))
   :config
   (setq lsp-prefer-flymake nil) ;; Use flycheck instead of flymake
   (setq lsp-idle-delay 0.5)     ;; Reduce delay for LSP response
   (setq lsp-go-use-gofumpt t)   ;; Use gofumpt for Go formatting
   ;; Configure clangd for C files
+
+  (setq lsp-clients-ruby-server-command '("ruby-lsp"))
   (setq lsp-clients-clangd-args '("--clang-tidy" "--completion-style=detailed" "--header-insertion=never"))
   (add-to-list 'lsp-client-packages 'lsp-clangd))
 
@@ -1755,7 +1768,7 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 (require 'reformatter)
 (reformatter-define shfmt
   :program "shfmt"
-  :args '("-i" "4" "-ci" "-bn" "-sr" "-kp")
+  :args '("-i" "4" "-ci" "-bn" "-fn" "-sr" "-kp")
   :lighter " shfmt")
 
 
@@ -1938,6 +1951,20 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (add-hook 'fennel-mode-hook 'my-fennel-evil-keybindings))
 
 ;; =======================
+;; Java Configuration
+;; =======================
+
+(use-package lsp-java
+  :straight t
+  :config
+  (add-hook 'java-mode-hook 'lsp)
+  (setq lsp-java-server-install-dir "~/language-servers/eclipse.jdt.ls")
+  (let ((eclipse-jdt-ls-path (expand-file-name "~/language-servers/eclipse.jdt.ls/bin")))
+    (setenv "PATH" (concat eclipse-jdt-ls-path path-separator (getenv "PATH")))
+    (add-to-list 'exec-path eclipse-jdt-ls-path))
+  )
+
+;; =======================
 ;; JavaScript Configuration
 ;; =======================
 
@@ -2034,24 +2061,21 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   :config
   (setq go-eldoc-gocode "gopls")) ;; Use gopls for Go code intelligence
 
-;; Set up flycheck for Go
+
+;; Set up Flycheck
 (use-package flycheck
   :straight t
-  :hook (go-mode . flycheck-mode) ;; Enable Flycheck only in go-mode
+  :hook ((java-mode . flycheck-mode)
+         (c-mode . flycheck-mode)
+         (ruby-mode . flycheck-mode))
   :config
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (setq flycheck-go-staticcheck-executable "staticcheck") ;; Ensure staticcheck is in PATH
-  ;; Add Flycheck backends specific to Go
-  (flycheck-define-checker go-staticcheck
-    "A Flycheck checker for Go using staticcheck."
-    :command ("staticcheck" "-f" "json" source)
-    :error-parser flycheck-parse-json
-    :error-filter
-    (lambda (errors)
-      (flycheck-sanitize-errors
-       (flycheck-increment-error-columns errors)))
-    :modes go-mode)
-  (add-to-list 'flycheck-checkers 'go-staticcheck))
+  ;; Define a list of checkers to keep
+  (setq-default flycheck-checkers '(ruby-standard c-gcc go-staticcheck))
+  ;; Common Flycheck configurations
+  (setq flycheck-check-syntax-automatically '(save mode-enabled)))
+
+
+
 
 ;; Optional: Ensure staticcheck is installed
 ;; You can add this comment as a reminder for users:
@@ -2379,3 +2403,5 @@ to that buffer. Otherwise create a new buffer with Pry."
         (destination (concat (file-name-as-directory directory) "license.rb")))
     (download-file url destination)
     (message "Downloaded license.rb to %s" destination)))
+(put 'downcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil)
