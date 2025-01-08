@@ -1,329 +1,631 @@
-;; This gives an introduction to Emacs Lisp in 15 minutes (v0.2d)
+;; tutorial: learn emacs lisp quickly - today!
 ;;
-;; First make sure you read this text by Peter Norvig:
-;; http://norvig.com/21-days.html
+;; WARNING: While this won't brick your system, throwing your machine in
+;; frustration might. You've been warned.
 ;;
-;; Then install latest version of GNU Emacs:
-;;
-;; Debian: apt-get install emacs (or see your distro instructions)
-;; OSX: https://emacsformacosx.com/
-;; Windows: https://ftp.gnu.org/gnu/emacs/windows/
-;;
-;; More general information can be found at:
-;; http://www.gnu.org/software/emacs/#Obtaining
+;; Core Concepts
+;; ------------
+;; 1. Everything happens in buffers, not files
+;; 2. *scratch* is your default playground
+;; 3. lisp-interaction-mode enables REPL functionality
 
-;; Important warning:
-;;
-;; Going through this tutorial won't damage your computer unless
-;; you get so angry that you throw it on the floor.  In that case,
-;; I hereby decline any responsibility.  Have fun!
+;; Basic Syntax
+;; -----------
+;; Comments: Start with ;
+;; S-expressions: Everything lives in (parentheses)
+;; Evaluation: C-x C-e at end of expression
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Fire up Emacs.
-;;
-;; Hit the `q' key to dismiss the welcome message.
-;;
-;; Now look at the gray line at the bottom of the window:
-;;
-;; "*scratch*" is the name of the editing space you are now in.
-;; This editing space is called a "buffer".
-;;
-;; The scratch buffer is the default buffer when opening Emacs.
-;; You are never editing files: you are editing buffers that you
-;; can save to a file.
-;;
-;; "Lisp interaction" refers to a set of commands available here.
-;;
-;; Emacs has a built-in set of commands available in every buffer,
-;; and several subsets of commands available when you activate a
-;; specific mode.  Here we use the `lisp-interaction-mode', which
-;; comes with commands to evaluate and navigate within Elisp code.
+;; Math Operations
+;; --------------
+(+ 1 2 3 4)                    ; => 10
+(- 10 5)                       ; => 5
+(- 10)                         ; => -10
+(* 2 3 4)                      ; => 24
+(/ 10 2)                       ; => 5
+(/ 10 3)                       ; => 3
+(/ 10.0 3)                     ; => 3.3333333333333335
+(% 10 3)                       ; => 1
+(mod 10 3)                     ; => 1
+(1+ 5)                         ; => 6
+(1- 5)                         ; => 4
+(abs -5)                       ; => 5
+(random 10)                    ; => random number 0-9
+(expt 2 3)                     ; => 8
+(sqrt 16)                      ; => 4.0
+(float 5)                      ; => 5.0
+(truncate 5.6)                 ; => 5
+(floor 5.6)                    ; => 5
+(ceiling 5.4)                  ; => 6
+(round 5.5)                    ; => 6
+(max 1 2 3 4)                 ; => 4
+(min 1 2 3 4)                 ; => 1
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Semi-colons start comments anywhere on a line.
-;;
-;; Elisp programs are made of symbolic expressions ("sexps"):
-(+ 2 2)
+;; Numeric Predicates
+(numberp 5)                    ; => t
+(integerp 5)                  ; => t
+(floatp 5.0)                  ; => t
+(zerop 0)                     ; => t
+(plusp 5)                     ; => t
+(minusp -5)                   ; => t
+(oddp 5)                      ; => t
+(evenp 6)                     ; => t
 
-;; This symbolic expression reads as "Add 2 to 2".
+;; Variable Operations
+;; -----------------
+(setq x 1)                    ; => 1
+(setq y 2 z 3)               ; => 3
+(setq counter 0               ; => 0
+      max-count 100
+      name "counter")
 
-;; Sexps are enclosed into parentheses, possibly nested:
-(+ 2 (+ 1 1))
+(let ((a 1)
+      (b 2))
+  (setq a (+ a b))           ; => 3
+  a)
 
-;; A symbolic expression contains atoms or other symbolic
-;; expressions.  In the above examples, 1 and 2 are atoms,
-;; (+ 2 (+ 1 1)) and (+ 1 1) are symbolic expressions.
+(defvar *global-var* 42)     ; => 42
+(defconst MY-CONSTANT 3.14)  ; => 3.14
 
-;; From `lisp-interaction-mode' you can evaluate sexps.
-;; Put the cursor right after the closing parenthesis then
-;; hold down the control and hit the j keys ("C-j" for short).
+(makunbound 'x)              ; Unbind x
+(boundp 'x)                  ; => nil
 
-(+ 3 (+ 1 2))
-;;           ^ cursor here
-;; `C-j' => 6
+;; Variable Increment/Decrement
+(setq counter 0)             ; => 0
+(setq counter (1+ counter))  ; => 1
+(cl-incf counter)           ; => 2
+(cl-decf counter)           ; => 1
 
-;; `C-j' inserts the result of the evaluation in the buffer.
 
-;; `C-xC-e' displays the same result in Emacs bottom line,
-;; called the "echo area". We will generally use `C-xC-e',
-;; as we don't want to clutter the buffer with useless text.
+;; Numeric Conversions
+(number-to-string 42)        ; => "42"
+(string-to-number "42")      ; => 42
+(format "%d" 42)             ; => "42"
+(format "%04d" 42)           ; => "0042"
+(format "%.2f" 3.14159)      ; => "3.14"
 
-;; `setq' stores a value into a variable:
-(setq my-name "Bastien")
-;; `C-xC-e' => "Bastien" (displayed in the echo area)
+;; Compound Operations
+(setq count 0)
+(while (< count 5)
+  (insert (format "Count: %d\n" count))
+  (setq count (1+ count)))
 
-;; `insert' will insert "Hello!" where the cursor is:
-(insert "Hello!")
-;; `C-xC-e' => "Hello!"
+(dotimes (i 5)
+  (insert (format "Index: %d\n" i)))
 
-;; We used `insert' with only one argument "Hello!", but
-;; we can pass more arguments -- here we use two:
+(let ((numbers '(1 2 3 4 5)))
+  (dolist (num numbers)
+    (insert (format "Number: %d\n" num))))
 
-(insert "Hello" " world!")
-;; `C-xC-e' => "Hello world!"
+;; Point Management
+(let ((start (point)))
+  (insert "Hello")
+  (push-mark)
+  (insert " World")
+  (delete-region start (point)))
 
-;; You can use variables instead of strings:
-(insert "Hello, I am " my-name)
-;; `C-xC-e' => "Hello, I am Bastien"
+;; Basic Operations
+;; --------------
+;; Math:
+(+ 2 2)         ; => 4
+(+ 2 (+ 1 1))   ; => 4    ; Nesting works as expected
 
-;; You can combine sexps into functions:
-(defun hello ()
-  (insert "Hello, I am " my-name))
-;; `C-xC-e' => hello
+;; Variables:
+(setq var "value")      ; Sets variable
+(insert "text")         ; Writes at cursor
+(insert str1 str2)      ; Multiple args work
 
-;; You can evaluate functions:
-(hello)
-;; `C-xC-e' => Hello, I am Bastien
+;; Functions & Functional Programming
+;; -----------------------------
+;; Functions are first-class citizens in Elisp. This isn't just academic
+;; bullshit - it's the core of how Elisp works. Everything is either data
+;; or a function that transforms data. Period.
 
-;; The empty parentheses in the function's definition means that
-;; it does not accept arguments.  But always using `my-name' is
-;; boring, let's tell the function to accept one argument (here
-;; the argument is called "name"):
+;; Function Basics
+;; ------------
+;; Basic function definition. Nothing fancy.
+(defun square (x)
+  "Square a number because apparently that's useful."
+  (* x x))
 
-(defun hello (name)
-  (insert "Hello " name))
-;; `C-xC-e' => hello
+;; Interactive functions - can be called via M-x
+(defun greet (name)
+  "Greet someone or stay silent on nil."
+  (interactive "sName: ")          ; 's' means string prompt
+  (when name                       ; guard against nil
+    (message "Hello, %s" name)))
 
-;; Now let's call the function with the string "you" as the value
-;; for its unique argument:
-(hello "you")
-;; `C-xC-e' => "Hello you"
+;; Function Arguments
+;; ---------------
+;; Required args must be provided. Optional args can fuck off.
+(defun full-name (first &optional last)  ; last is optional
+  (if last
+      (format "%s %s" first last)
+    first))
 
-;; Yeah!
+;; Rest args - grab everything else
+(defun sum (&rest numbers)
+  (apply '+ numbers))              ; '+ is the function, not operator
 
-;; Take a breath.
+;; Keyword arguments - when you need named params
+(defun make-person (&key name age location)
+  (list :name name :age age :location location))
+;; Call it: (make-person :name "Bob" :age 42)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Now switch to a new buffer named "*test*" in another window:
+;; Lexical Scope & Closures
+;; ---------------------
+;; Lexical scope is default since Emacs 24.1. Dynamic scope is old news.
+(let ((x 1))
+  (let ((y 2))
+    (let ((z 3))
+      (message "x:%d y:%d z:%d" x y z))))  ; All visible here
 
-(switch-to-buffer-other-window "*test*")
-;; `C-xC-e'
-;; => [screen has two windows and cursor is in the *test* buffer]
+;; Closures capture their environment
+(defun make-counter ()
+  "Create a counter. Each call increments."
+  (let ((count 0))                ; Private state
+    (lambda ()                    ; Return function
+      (setq count (1+ count)))))
 
-;; Mouse over the top window and left-click to go back.  Or you can
-;; use `C-xo' (i.e. hold down control-x and hit o) to go to the other
-;; window interactively.
+(setq c1 (make-counter))
+(funcall c1)                      ; => 1
+(funcall c1)                      ; => 2
 
-;; You can combine several sexps with `progn':
-(progn (switch-to-buffer-other-window "*test*") (hello "you"))
-;; `C-xC-e'
-;; => [The screen has two windows and cursor is in the *test* buffer]
+;; Advanced Closure Example
+;; --------------------
+(defun make-adder (x)
+  "Create a function that adds X to its argument."
+  (lambda (y) (+ x y)))
 
-;; Now if you don't mind, I'll stop asking you to hit `C-xC-e': do it
-;; for every sexp that follows.
+(setq add5 (make-adder 5))
+(funcall add5 10)                 ; => 15
 
-;; Always go back to the *scratch* buffer with the mouse or `C-xo'.
+;; Lambda Expressions
+;; ---------------
+;; Anonymous functions - use them, love them
+(mapcar (lambda (x) (* x x)) '(1 2 3))  ; => (1 4 9)
 
-;; It's often useful to erase the buffer:
-(progn (switch-to-buffer-other-window "*test*") (erase-buffer) (hello "there"))
+;; Shorthand lambda reader macro
+(mapcar #'(lambda (x) (* x x)) '(1 2 3))  ; Same thing
 
-;; Or to go back to the other window:
-(progn (switch-to-buffer-other-window "*test*") (erase-buffer) (hello "you") (other-window 1))
+;; Function Composition
+;; ----------------
+(defun compose (f g)
+  "Compose functions F and G."
+  (lambda (x) (funcall f (funcall g x))))
 
-;; You can bind a value to a local variable with `let':
-(let ((local-name "you"))
+(setq times2 (lambda (x) (* 2 x)))
+(setq plus3 (lambda (x) (+ 3 x)))
+(setq times2-plus3 (compose plus3 times2))
+
+;; Higher-order Functions
+;; ------------------
+;; Functions that take/return functions
+(defun apply-twice (f x)
+  "Apply F to X twice."
+  (funcall f (funcall f x)))
+
+(apply-twice #'1+ 0)              ; => 2
+
+;; Partial Application
+;; ----------------
+(defun partial (fn &rest args)
+  "Partially apply FN with ARGS."
+  (lambda (&rest more-args)
+    (apply fn (append args more-args))))
+
+(setq add10 (partial '+ 10))
+(funcall add10 5)                 ; => 15
+
+;; Advanced Scope Tricks
+;; -----------------
+;; let* for sequential binding
+(let* ((x 5)
+       (y (* x 2))                ; x is visible here
+       (z (+ x y)))               ; both x and y visible
+  z)
+
+;; letrec for recursive bindings
+(defun letrec (bindings &rest body)
+  (let ((values (mapcar (lambda (x) nil) bindings)))
+    (prog1
+        (let (bindings)
+          (mapcar (lambda (v b) (set v (eval b))) values bindings)
+          (eval (cons 'progn body)))
+      (mapcar 'makunbound values))))
+
+;; Dynamic Scope (when you need it)
+;; ---------------------------
+;; Use special variables (dynamic scope) sparingly
+(defvar *debug-enabled* nil)      ; Special variable
+(let ((*debug-enabled* t))        ; Dynamic binding
+  (should-i-debug))               ; Sees t
+
+;; Multiple Value Binding
+;; ------------------
+(cl-multiple-value-bind (a b)
+    (values 1 2)
+  (list a b))                     ; => (1 2)
+
+;; Functional Programming Patterns
+;; --------------------------
+;; Mapping
+(mapcar #'1+ '(1 2 3))           ; => (2 3 4)
+(mapcan #'list '(1 2 3))         ; Flatten results
+
+;; Reduction
+(reduce #'+ '(1 2 3 4))          ; => 10
+(reduce #'cons '(1 2 3) :from-end t)  ; Build list
+
+;; Filtering
+(cl-remove-if-not #'evenp '(1 2 3 4))  ; => (2 4)
+
+;; Real-world Example: Function Factory
+;; ------------------------------
+(defun make-incrementor (n)
+  "Create a function that increments by N."
+  (lambda (x) (+ x n)))
+
+(defun make-checker (predicate transform)
+  "Create validator that transforms value if predicate passes."
+  (lambda (x)
+    (if (funcall predicate x)
+        (funcall transform x)
+      x)))
+
+;; Extended Example: Data Pipeline
+;; --------------------------
+(defun pipeline (&rest functions)
+  "Compose multiple functions right to left."
+  (lambda (x)
+    (reduce #'funcall
+            (reverse functions)
+            :initial-value x)))
+
+(setq process-data
+      (pipeline
+       #'string-to-number        ; Convert to number
+       (lambda (x) (* x 2))      ; Double it
+       #'number-to-string))      ; Back to string
+
+;; Remember:
+;; 1. Functions are values - treat them that way
+;; 2. Closures capture their environment perfectly
+;; 3. Lexical scope is your friend
+;; 4. Dynamic scope is occasionally useful, mostly dangerous
+;; 5. Composition > inheritance
+;; 6. Pure functions > side effects
+
+
+;; Lists: The Foundation
+;; ------------------
+;; If you don't understand lists, you don't understand Lisp.
+;; Everything in Elisp is either an atom or a list. Yes, everything.
+;; Your code? Lists. Your data? Lists. Get used to it.
+
+;; List Creation
+;; -----------
+;; Quote prevents evaluation. Without it, Elisp tries to call first element
+;; as function. Don't be that person.
+(setq basic-list '(1 2 3))              ; Standard list
+(setq nested-list '((1 2) (3 4)))       ; Lists within lists
+(list 1 2 3)                            ; Dynamic list creation
+(make-list 5 'x)                        ; => (x x x x x)
+
+;; List Access - The Building Blocks
+;; -----------------------------
+;; car/cdr aren't cute names - they're fundamental operations.
+(car '(1 2 3))                          ; => 1
+(cdr '(1 2 3))                          ; => (2 3)
+(car (cdr '(1 2 3)))                    ; => 2
+(nth 1 '(1 2 3))                        ; => 2 (zero-based)
+
+;; Composition Shortcuts
+;; -----------------
+;; Learn these. Use these. Love these.
+(cadr lst)                              ; Same as (car (cdr lst))
+(caddr lst)                             ; Third element
+(last lst)                              ; Last cons cell
+(butlast lst)                           ; All but last element
+
+;; List Mutation
+;; -----------
+;; Mutation changes lists in place. Side effects ahead.
+(setq my-list '(1 2 3))
+(push 0 my-list)                        ; => (0 1 2 3)
+(pop my-list)                           ; => 0, my-list now (1 2 3)
+(setf (nth 1 my-list) 'changed)         ; Destructive change
+
+;; List Operations
+;; ------------
+;; Higher-order functions are your friends
+(mapcar '1+ '(1 2 3))                   ; => (2 3 4)
+(remove 3 '(1 2 3 2 1))                 ; => (1 2 2 1)
+(member 'needle '(hay needle stack))     ; => (needle stack)
+(append '(1 2) '(3 4))                  ; => (1 2 3 4)
+
+;; Association Lists (alists)
+;; ----------------------
+;; Poor man's hash table, but sometimes exactly what you need
+(setq my-alist '((key1 . value1)
+                 (key2 . value2)))
+(assoc 'key1 my-alist)                  ; => (key1 . value1)
+(rassoc 'value2 my-alist)               ; => (key2 . value2)
+
+;; String Operations
+;; --------------
+;; Strings aren't lists, but they're sequences. Different rules apply.
+
+;; String Creation and Basics
+;; ----------------------
+(make-string 5 ?x)                      ; => "xxxxx"
+(substring "hello" 1 3)                 ; => "el"
+(concat "hello" " " "world")            ; => "hello world"
+
+;; String Formatting
+;; --------------
+;; Format specifiers that don't suck
+(format "Int: %d String: %s Char: %c" 42 "foo" ?x)
+(format-time-string "%Y-%m-%d")         ; Current date
+(message "%S" complex-data-structure)    ; Debug printing
+
+;; Search and Replace
+;; --------------
+;; Return value matters. Check it.
+(string-match "pattern" "test pattern")  ; => 5 (position)
+(replace-regexp-in-string "old" "new" "old text")
+
+;; Case Operations
+;; ------------
+(upcase "hello")                        ; => "HELLO"
+(downcase "HELLO")                      ; => "hello"
+(capitalize "hello world")              ; => "Hello World"
+
+;; Regular Expressions
+;; ----------------
+;; More powerful than you need, until you need more power
+
+;; Basic Patterns
+;; -----------
+;; \\{n}    ; Exactly n times
+;; \\{n,m}  ; n to m times
+;; \\w      ; Word character
+;; \\s-     ; Whitespace
+;; \\(?:    ; Non-capturing group
+
+;; Real-world Examples
+;; ---------------
+(string-match "\\([0-9]+\\)" "abc123def")  ; Captures "123"
+(match-string 1 "abc123def")               ; Gets captured group
+
+;; Common Patterns
+(defvar number-regex "\\([0-9]+\\(?:\\.[0-9]*\\)?\\)")
+(defvar email-regex "\\([^@]+\\)@\\([^@]+\\)")
+
+;; Search with Context
+;; ---------------
+(save-excursion
+  (save-match-data
+    (while (re-search-forward pattern nil t)
+      (replace-match replacement))))
+
+;; Text Properties
+;; -------------
+;; Every character can have properties. Use them wisely.
+
+;; Basic Properties
+;; -------------
+(put-text-property start end 'face 'bold)
+(put-text-property start end 'invisible t)
+(put-text-property start end 'read-only t)
+
+;; Multiple Properties
+;; ---------------
+(add-text-properties start end
+                     '(face bold
+                            mouse-face highlight
+                            help-echo "Click me"))
+
+;; Property Lists
+;; -----------
+(setq props '(face bold keyboard-help "Press to activate"))
+(add-text-properties start end props)
+
+;; Examining Properties
+;; ----------------
+(get-text-property pos 'face)
+(text-properties-at pos)
+(next-property-change pos)
+
+;; Advanced Text Properties
+;; --------------------
+;; Create clickable text
+(insert-text-button "Click me"
+                    'action (lambda (button)
+                              (message "Clicked!"))
+                    'follow-link t
+                    'help-echo "Click for action")
+
+;; Real-world Example: Syntax Highlighting
+;; ---------------------------------
+(defun highlight-numbers ()
+  "Highlight all numbers in buffer"
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "\\([0-9]+\\)" nil t)
+      (add-text-properties
+       (match-beginning 1) (match-end 1)
+       '(face (:foreground "red" :weight bold))))))
+
+;; Remember:
+;; 1. Lists are immutable unless you mutate them
+;; 2. Text properties are buffer-local
+;; 3. Regular expressions are greedy by default
+;; 4. Always use save-match-data for regex operations
+
+;; Basic Buffer Creation & Navigation
+;; -------------------------------
+;; Create a new buffer or switch to existing one. Don't be an idiot -
+;; use meaningful names.
+(get-buffer-create "*test*")  ; Returns buffer, creates if needed
+
+;; Switch to buffer in current window. Simple but sometimes wrong.
+(switch-to-buffer "*test*")   ; Potentially destructive
+
+;; The right way - preserve window state:
+(switch-to-buffer-other-window "*test*")  ; Safe, creates split
+
+;; Traverse window layout. Count matters - negative goes backward.
+(other-window 1)              ; Forward one window
+(other-window -1)             ; Backward one window
+
+;; Buffer State Management
+;; --------------------
+;; Don't just create buffers willy-nilly. Clean up after yourself.
+(progn
   (switch-to-buffer-other-window "*test*")
-  (erase-buffer)
-  (hello local-name)
-  (other-window 1))
+  (erase-buffer)              ; Nuke contents. No undo. No whining.
+  (insert "Fresh slate\n")
+  (other-window 1))           ; Return to origin
 
-;; No need to use `progn' in that case, since `let' also combines
-;; several sexps.
+;; Buffer isn't responding? Force it:
+(kill-buffer "*test*")        ; Kills buffer. No questions asked.
 
-;; Let's format a string:
-(format "Hello %s!\n" "visitor")
+;; Buffer Content Operations
+;; ---------------------
+;; Your buffer is empty. Fill it with something useful.
+(insert "Hello")                         ; Basic insertion
+(insert "Hello" " " "World")            ; Multiple args
+(insert (format "%d bottles" 99))        ; Formatted text
 
-;; %s is a place-holder for a string, replaced by "visitor".
-;; \n is the newline character.
+;; Formatted insertions - because plain text is boring
+(insert (propertize "Bold" 'face 'bold)) ; Styled text
+(insert ?\n)                            ; Raw characters
+(insert-char ?\s 5)                     ; Repeat chars
+(insert (make-string 40 ?-))            ; Line separators
 
-;; Let's refine our function by using format:
-(defun hello (name)
-  (insert (format "Hello %s!\n" name)))
+;; Structured content insertion
+(let ((start (point)))
+  (insert "Important text")
+  (put-text-property start (point)
+                     'face '(:foreground "red")))
 
-(hello "you")
+;; Multi-line content - keep it organized
+(insert (concat "Section 1\n"
+                "  Subsection A\n"
+                "  Subsection B\n"))
 
-;; Let's create another function which uses `let':
-(defun greeting (name)
-  (let ((your-name "Bastien"))
-    (insert
-      (format
-        "Hello %s!\n\nI am %s."
-        name ; the argument of the function
-        your-name ; the let-bound variable "Bastien"
-        ))))
+;; Buffer Position & Movement
+;; ----------------------
+;; Point = cursor position. Learn it. Love it. Stop using arrow keys.
+(goto-char (point-min))       ; Start of buffer
+(goto-char (point-max))       ; End of buffer
+(point)                       ; Current position (integer)
 
-;; And evaluate it:
-(greeting "you")
+;; Move relatively because hardcoding positions is moronic:
+(forward-char 5)              ; Forward 5 chars
+(backward-char 3)             ; Backward 3 chars
+(forward-line 1)              ; Next line
+(forward-line -1)             ; Previous line
 
-;; Some functions are interactive:
-(read-from-minibuffer "Enter your name: ")
+;; Advanced Buffer Operations
+;; ----------------------
+;; Want to do something to all buffers? Use iteration:
+(defun nuke-all-buffers ()
+  "Kill all buffers. Period. Use with caution."
+  (interactive)
+  (mapc 'kill-buffer (buffer-list)))
 
-;; Evaluating this function returns what you entered at the prompt.
+;; Buffer Local Variables
+;; -------------------
+;; Each buffer has its own variable namespace. Use it.
+(make-local-variable 'my-special-var)     ; Create buffer-local var
+(setq-local my-special-var 42)            ; Set buffer-local value
 
-;; Let's make our `greeting' function prompt for your name:
-(defun greeting (from-name)
-  (let ((your-name (read-from-minibuffer "Enter your name: ")))
-    (insert
-      (format
-        "Hello!\n\nI am %s and you are %s."
-        from-name ; the argument of the function
-        your-name ; the let-bound var, entered at prompt
-        ))))
-
-(greeting "Bastien")
-
-;; Let's complete it by displaying the results in the other window:
-(defun greeting (from-name)
-  (let ((your-name (read-from-minibuffer "Enter your name: ")))
-    (switch-to-buffer-other-window "*test*")
+;; Check if buffer exists before doing stupid things:
+(when (get-buffer "*test*")
+  (with-current-buffer "*test*"
     (erase-buffer)
-    (insert (format "Hello %s!\n\nI am %s." your-name from-name))
-    (other-window 1)))
+    (insert "Buffer exists, nuking contents\n")))
 
-;; Now test it:
-(greeting "Bastien")
+;; Temporary Buffer Operations
+;; -----------------------
+;; Need to do something in a buffer without side effects?
+;; Use with-temp-buffer. Always.
+(with-temp-buffer
+  (insert "This buffer will self-destruct\n")
+  (buffer-string))            ; Get contents as string
 
-;; Take a breath.
+;; Real Buffer Power
+;; --------------
+;; Want to see why buffers matter? Try this:
+(defun buffer-stats ()
+  "Get stats about all buffers because why not."
+  (interactive)
+  (let ((total-size 0)
+        (buffer-count 0))
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (setq total-size (+ total-size (buffer-size)))
+        (setq buffer-count (1+ buffer-count))))
+    (message "Total: %d buffers, %d chars"
+             buffer-count total-size)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Buffer Marks & Regions
+;; -------------------
+;; Marks are positions you care about. Don't lose them.
+(push-mark)                   ; Set mark at point
+(pop-mark)                    ; Pop mark ring
+(mark)                        ; Get current mark
+(exchange-point-and-mark)     ; Swap point and mark
+
+;; The Golden Rule of Buffers
+;; -----------------------
+;; Every buffer operation should be:
+;; 1. Intentional   - Know what you're changing
+;; 2. Reversible    - Unless explicitly destructive
+;; 3. Efficient     - Don't loop when mapcar will do
+;; 4. Self-contained - Clean up your mess
+
+;; Advanced Real-World Example
+;; -----------------------
+;; Here's how you'd implement a buffer snapshot system:
+(defun snapshot-buffer ()
+  "Create a snapshot of current buffer because paranoia is good."
+  (interactive)
+  (let ((snap-name (format "*snapshot-%s-%s*"
+                           (buffer-name)
+                           (format-time-string "%H:%M:%S"))))
+    (with-current-buffer (get-buffer-create snap-name)
+      (insert-buffer-substring (current-buffer))
+      (setq buffer-read-only t)           ; Lock it
+      (message "Snapshot created: %s" snap-name))))
+
+;; Want to make your buffer operations bulletproof? Wrap them:
+(defmacro with-safe-buffer-ops (buffer-name &rest body)
+  "Execute BODY in BUFFER-NAME with error handling because stuff happens."
+  `(condition-case err
+       (with-current-buffer ,buffer-name
+         ,@body)
+     (error (message "Buffer operation failed: %s" err)
+            nil)))
+
+;; Use it like this:
+(with-safe-buffer-ops "*test*"
+                      (erase-buffer)
+                      (insert "Safe operations\n"))
+
+
+;; Help System
+;; ---------
+;; C-h v VAR    ; Variable docs
+;; C-h f FUNC   ; Function docs
+;; C-h i m elisp ; Manual
 ;;
-;; Let's store a list of names:
-;; If you want to create a literal list of data, use ' to stop it from
-;; being evaluated - literally, "quote" the data.
-(setq list-of-names '("Sarah" "Chloe" "Mathilde"))
+;; RTFM: https://www.gnu.org/software/emacs/manual/html_node/eintr/index.html
 
-;; Get the first element of this list with `car':
-(car list-of-names)
-
-;; Get a list of all but the first element with `cdr':
-(cdr list-of-names)
-
-;; Add an element to the beginning of a list with `push':
-(push "Stephanie" list-of-names)
-
-;; NOTE: `car' and `cdr' don't modify the list, but `push' does.
-;; This is an important difference: some functions don't have any
-;; side-effects (like `car') while others have (like `push').
-
-;; Let's call `hello' for each element in `list-of-names':
-(mapcar 'hello list-of-names)
-
-;; Refine `greeting' to say hello to everyone in `list-of-names':
-(defun greeting ()
-  (switch-to-buffer-other-window "*test*")
-  (erase-buffer)
-  (mapcar 'hello list-of-names)
-  (other-window 1))
-
-(greeting)
-
-;; Remember the `hello' function we defined above?  It takes one
-;; argument, a name.  `mapcar' calls `hello', successively using each
-;; element of `list-of-names' as the argument for `hello'.
-
-;; Now let's arrange a bit what we have in the displayed buffer:
-
-(defun replace-hello-by-bonjour ()
-  (switch-to-buffer-other-window "*test*")
-  (goto-char (point-min))
-  (while (search-forward "Hello") (replace-match "Bonjour"))
-  (other-window 1))
-
-;; (goto-char (point-min)) goes to the beginning of the buffer.
-;; (search-forward "Hello") searches for the string "Hello".
-;; (while x y) evaluates the y sexp(s) while x returns something.
-;; If x returns `nil' (nothing), we exit the while loop.
-
-(replace-hello-by-bonjour)
-
-;; You should see all occurrences of "Hello" in the *test* buffer
-;; replaced by "Bonjour".
-
-;; You should also get an error: "Search failed: Hello".
-;;
-;; To avoid this error, you need to tell `search-forward' whether it
-;; should stop searching at some point in the buffer, and whether it
-;; should silently fail when nothing is found:
-
-;; (search-forward "Hello" nil t) does the trick:
-
-;; The `nil' argument says: the search is not bound to a position.
-;; The `'t' argument says: silently fail when nothing is found.
-
-;; We use this sexp in the function below, which doesn't throw an error:
-
-(defun hello-to-bonjour ()
-  (switch-to-buffer-other-window "*test*")
-  (erase-buffer)
-  ;; Say hello to names in `list-of-names'
-  (mapcar 'hello list-of-names)
-  (goto-char (point-min))
-  ;; Replace "Hello" by "Bonjour"
-  (while (search-forward "Hello" nil t) (replace-match "Bonjour"))
-  (other-window 1))
-
-(hello-to-bonjour)
-
-;; Let's boldify the names:
-
-(defun boldify-names ()
-  (switch-to-buffer-other-window "*test*")
-  (goto-char (point-min))
-  (while
-    (re-search-forward "Bonjour \\(.+\\)!" nil t)
-    (add-text-properties (match-beginning 1) (match-end 1) (list 'face 'bold)))
-  (other-window 1))
-
-;; This functions introduces `re-search-forward': instead of
-;; searching for the string "Bonjour", you search for a pattern,
-;; using a "regular expression" (abbreviated in the prefix "re-").
-
-;; The regular expression is "Bonjour \\(.+\\)!" and it reads:
-;; the string "Bonjour ", and
-;; a group of            | this is the \\( ... \\) construct
-;;   any character       | this is the .
-;;   possibly repeated   | this is the +
-;; and the "!" string.
-
-;; Ready?  Test it!
-
-(boldify-names)
-
-;; `add-text-properties' adds... text properties, like a face.
-
-;; OK, we are done.  Happy hacking!
-
-;; If you want to know more about a variable or a function:
-;;
-;; C-h v a-variable RET
-;; C-h f a-function RET
-;;
-;; To read the Emacs Lisp manual with Emacs:
-;;
-;; C-h i m elisp RET
-;;
-;; To read an online introduction to Emacs Lisp:
-;; https://www.gnu.org/software/emacs/manual/html_node/eintr/index.html
+;; Remember:
+;; - Parentheses are your friends (until they're not)
+;; - Everything is an expression
+;; - Side effects will bite you
+;; - The buffer is your universe

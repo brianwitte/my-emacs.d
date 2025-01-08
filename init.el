@@ -194,46 +194,67 @@
     "p d" 'projectile-find-dir
     "p d" 'projectile-dired
     "p R" 'projectile-regenerate-tags
+    ;; Gud Debugger
+    "d ." 'projectile-run-gdb    ; Start debugger
+    "d b" 'gud-break            ; Set breakpoint
+    "d n" 'gud-next             ; Next line (step over)
+    "d s" 'gud-step             ; Step into
+    "d f" 'gud-finish           ; Finish current function (step out)
+    "d c" 'gud-cont             ; Continue execution
+    "d r" 'gud-run              ; Run/restart program
+    "d u" 'gud-until            ; Continue until current line
+    "d p" 'gud-print            ; Print value of expression
+    "d d" 'gud-remove           ; Delete breakpoint
+    "d t" 'gud-tbreak           ; Set temporary breakpoint
+    "d w" 'gud-watch            ; Set watchpoint
+    "d l" 'gud-refresh          ; Refresh display
+    "d <" 'gud-up               ; Select stack frame up
+    "d >" 'gud-down             ; Select stack frame down
+    "d q" 'gud-quit             ; Quit debugging session
+    "d i" 'gud-stepi            ; Step one instruction
+    "d h" 'gud-goto-here        ; Continue until current line
+    "d v" 'gud-print            ; Print value (alternative binding)
+    "d m" 'gud-display-memory   ; Display memory
     ;; LSP
     "l l"  #'lsp
     "l \"" #'lsp-workspace-restart
     "l q"  #'lsp-workspace-shutdown
-    ;; Code Actions
+    ;; LSP Code Actions
     "l a"  #'lsp-execute-code-action
     "l A"  #'lsp-organize-imports
-    ;; Diagnostics
+    ;; LSP Diagnostics
     "l d d" #'lsp-ui-flycheck-list
     "l d n" #'flycheck-next-error
     "l d p" #'flycheck-previous-error
     "l d f" #'flycheck-buffer
-    ;;  Format
+    ;; LSP Format
     "l f b" #'lsp-format-buffer
     "l f r" #'lsp-format-region
-    ;; Goto
+    ;; LSP Goto
     "l g d" #'lsp-find-definition
     "l g r" #'lsp-find-references
     "l g i" #'lsp-find-implementation
     "l g t" #'lsp-find-type-definition
     "l g o" #'lsp-describe-session
-    ;; Help
+    ;; LSP Help
     "l h d" #'lsp-describe-thing-at-point
     "l h s" #'lsp-signature-help
     "l h t" #'lsp-treemacs-symbols
-    ;; Rename
+    ;; LSP Rename
     "l r r" #'lsp-rename
-    ;;  Imenu and Outline
+    ;; LSP Imenu and Outline
     "l i i" #'lsp-ui-imenu
     "l i o" #'lsp-treemacs-outline
-    ;; Peek
+    ;; LSP Peek
     "l p d" #'lsp-ui-peek-find-definitions
     "l p r" #'lsp-ui-peek-find-references
     "l p i" #'lsp-ui-peek-find-implementation
-    ;; Workspace
+    ;; LSP Workspace
     "l w a" #'lsp-workspace-folders-add
     "l w r" #'lsp-workspace-folders-remove
     "l w l" #'lsp-workspace-folders-list
     "l w s" 'lsp-workspace-folders-switch
-    ;; Miscellaneous
+    ;; LSP Miscellaneous
     "l m s" #'lsp-restart-workspace
     "l m l" #'lsp-toggle-trace-io
     "l m t" #'lsp-clients-debug-info
@@ -1371,9 +1392,6 @@ FILE-MAP is a list of (NAME . PATH) pairs."
     "a g" 'nav-to-gtd
     "a k" 'nav-to-file-keymaps
     "a z" 'nav-to-zshrc
-    "d e" 'nav-to-elisp-dir
-    "d s" 'nav-to-scripts-dir
-    "d x" 'nav-to-xdg-home-dir
     ))
 
 (my-file-keymaps)
@@ -1665,6 +1683,7 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   :straight t
   :commands (lsp lsp-deferred)
   :hook ((java-mode . lsp-deferred)
+         (haskell-mode . lsp-deferred)
          (go-mode . lsp-deferred)
          (c-mode . lsp-deferred))
   :config
@@ -1951,6 +1970,104 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (add-hook 'fennel-mode-hook 'my-fennel-evil-keybindings))
 
 ;; =======================
+;; Haskell Configuration
+;; =======================
+;;; haskell.el --- Haskell Development Configuration
+
+(use-package haskell-mode
+  :straight t
+  :config
+  (defun my-haskell-mode-keybindings ()
+    (my-local-leader-def
+      :states 'normal
+      :keymaps 'haskell-mode-map
+      ;; REPL
+      " '"  #'haskell-interactive-bring
+      " \"" #'haskell-interactive-switch
+      " s b" #'haskell-interactive-switch-back
+      ;; Eval
+      " e b" #'haskell-process-load-file
+      " e e" #'haskell-interactive-mode-clear
+      " e r" #'haskell-process-reload
+      ;; GHCI
+      " g h" #'haskell-interactive-mode-visit-error
+      " g i" #'haskell-navigate-imports
+      " g m" #'haskell-menu
+      ;; Documentation
+      " h h" #'haskell-hoogle
+      " h d" #'haskell-hoogle-lookup-from-local
+      " h t" #'haskell-process-do-type
+      " h i" #'haskell-process-do-info
+      ;; Insert
+      " i l" #'haskell-process-load-or-reload
+      " i m" #'haskell-process-cabal
+      " i s" #'haskell-mode-insert-scc-at-point
+      ;; Format
+      " f f"  #'haskell-mode-stylish-buffer
+      " f r" #'haskell-mode-format-imports
+      ;; Cabal
+      " c c" #'haskell-cabal-visit-file
+      " c k" #'haskell-interactive-mode-clear
+      " c v" #'haskell-cabal-toggle-development-flag
+      " c b" #'haskell-process-cabal-build
+      " c t" #'haskell-process-cabal-test
+      ;; Debug
+      " d b" #'haskell-debug/break-on-function
+      " d c" #'haskell-debug/continue
+      " d d" #'haskell-debug/start
+      " d n" #'haskell-debug/next
+      " d p" #'haskell-debug/previous
+      " d r" #'haskell-debug/refresh
+      " d z" #'haskell-debug/abandon
+      ;; LSP
+      " l a" #'lsp-execute-code-action
+      " l d" #'lsp-find-definition
+      " l r" #'lsp-find-references
+      " l R" #'lsp-rename
+      " l h" #'lsp-describe-thing-at-point
+      " l f" #'lsp-format-buffer
+      " l t" #'lsp-describe-type-at-point
+      ;; Tests
+      " t a" #'haskell-process-cabal-test
+      " t f" #'haskell-test-run-test-at-point
+      " t m" #'haskell-test-run-module
+      " t p" #'haskell-test-run-project-tests))
+
+  (add-hook 'haskell-mode-hook 'my-haskell-mode-keybindings)
+  (add-hook 'haskell-mode-hook #'lsp)
+  (add-hook 'haskell-literate-mode-hook #'lsp))
+
+;; LSP setup for Haskell
+(use-package lsp-haskell
+  :straight t
+  :after haskell-mode
+  :config
+  (add-hook 'haskell-mode-hook #'lsp)
+  (add-hook 'haskell-literate-mode-hook #'lsp))
+
+;; Cabal mode
+(use-package hasky-stack
+  :straight t
+  :after haskell-mode
+  :config
+  (setq hasky-stack-auto-target t))
+
+;; Format using Ormolu
+(use-package reformatter
+  :straight t
+  :config
+  (reformatter-define ormolu
+    :program "ormolu"
+    :lighter " Ormolu"))
+
+;; Dante for GHCi integration
+(use-package dante
+  :straight t
+  :commands 'dante-mode
+  :config
+  (setq dante-repl-command-line '("stack" "repl")))
+
+;; =======================
 ;; Java Configuration
 ;; =======================
 
@@ -2161,6 +2278,96 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 
 (use-package poke-mode
   :straight t)
+
+;; #######################
+
+;; =======================
+;; Racket Configuration
+;; =======================
+;;; racket.el --- Racket Development Configuration
+
+(use-package racket-mode
+  :straight t
+  :config
+  (defun my-racket-mode-keybindings ()
+    (my-local-leader-def
+      :states 'normal
+      :keymaps 'racket-mode-map
+      ;; REPL Connection
+      " '"  #'racket-run
+      " \""  #'racket-run-with-debugging
+      " c"  #'racket-run-and-switch-to-repl
+
+      ;; Macro expansion
+      " m"  #'racket-expand-last-sexp
+      " M"  #'racket-expand-definition
+
+      ;; Debug
+      " d d" #'racket-debug-mode
+
+      ;; Eval
+      " e b" #'racket-run
+      " e d" #'racket-send-definition
+      " e D" #'racket-send-definition-and-focus
+      " e e" (lambda ()
+               (interactive)
+               (evil-normal-state)  ; Ensure we're in normal state
+               (forward-char)       ; Move past the closing paren
+               (racket-send-last-sexp)
+               (evil-backward-char))  ; Move back to preserve cursor position
+      " e E" (lambda ()
+               (interactive)
+               (evil-normal-state)
+               (forward-char)
+               (racket-send-last-sexp-and-focus)
+               (evil-backward-char))
+      " e r" #'racket-send-region
+      " e R" #'racket-send-region-and-focus
+
+      ;; Goto
+      " g b" #'racket-unvisit
+      " g g" #'racket-visit-definition
+      " g n" #'racket-visit-module
+
+      ;; Help
+      " h a" #'racket-documentation-search
+      " h d" #'racket-describe
+      " h w" #'racket-doc
+
+      ;; Inspect
+      " i i" #'racket-inspect-last-sexp
+      " i r" #'racket-inspect-definition
+
+      ;; Namespace/Module
+      " n r" #'racket-reload
+
+      ;; Pretty Print
+      " p p" #'racket-pretty-print
+      " p d" #'racket-pretty-print-definition
+
+      ;; REPL
+      " r q" #'racket-repl-exit
+      " r r" #'racket-run-and-switch-to-repl
+      " r R" #'racket-restart-and-switch-to-repl
+      " r b" #'racket-switch-to-repl
+      " r c" #'racket-repl-clear
+      " r f" #'racket-load-file
+      " r l" #'racket-run
+
+      ;; Test
+      " t t" #'racket-test
+      " t a" #'racket-test-with-coverage
+      " t r" #'racket-run-and-switch-to-repl))
+
+  ;; Add the keybindings to racket-mode
+  (add-hook 'racket-mode-hook 'my-racket-mode-keybindings)
+
+  ;; Additional Racket-specific settings
+  (setq racket-program "racket"
+        racket-images-inline t
+        racket-error-context 'high
+        racket-repl-history-directory (concat user-emacs-directory "racket-repl-history")))
+
 
 ;; #######################
 
