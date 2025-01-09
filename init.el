@@ -858,10 +858,23 @@ parses its input."
 (setup-org-mode-keys)
 
 ;; =======================
+;; Plan Mode Configuration
+;; =======================
+;;
+;; plan.el --- Description
+
+(load (expand-file-name
+       ".config/emacs/lisp/packages/plan/plan-mode"
+       gnus-home-directory))
+
+;; then require it
+(require 'plan-mode)
+
+;; =======================
 ;; Help System Enhancements
 ;; =======================
-;;;
-;;; base/help.el --- Description
+;;
+;; base/help.el --- Description
 
 ;; The best resource within Emacs for learning about basic Emacs Lisp (Elisp)
 ;; syntax, including how to perform loops, is the Emacs Lisp Reference
@@ -1932,6 +1945,72 @@ FILE-MAP is a list of (NAME . PATH) pairs."
 
 
 ;;; emx-clj.el ends here
+
+
+;; =======================
+;; Common Lisp Configuration
+;; =======================
+;;
+
+(use-package sly
+  :straight t
+  :config
+  (defun my-common-lisp-mode-sly-keybindings ()
+    (my-local-leader-def
+      :states 'normal
+      :keymaps 'lisp-mode-map
+      ;; REPL Management
+      " '"  #'sly
+      " \"" #'sly-connect
+      ;; Macroexpand
+      " m"  #'sly-macroexpand-1
+      " M"  #'sly-macroexpand-all
+      ;; Debug
+      " d d" #'sly-db-inspect-condition
+      ;; Eval
+      " e b" #'sly-eval-buffer
+      " e d" #'sly-eval-defun
+      " e D" #'sly-eval-defun-to-string
+      " e e" #'sly-eval-last-expression
+      " e E" #'sly-eval-last-expression-to-string
+      " e r" #'sly-eval-region
+      ;; Goto
+      " g b" #'sly-pop-find-definition-stack
+      " g g" #'sly-edit-definition
+      " g n" #'sly-browse-symbol
+      ;; Help
+      " h a" #'sly-apropos
+      " h d" #'sly-describe-symbol
+      " h j" #'sly-jump-to-documentation
+      ;; Inspect
+      " i i" #'sly-inspect
+      " i r" #'sly-inspect-last-expression
+      ;; Namespace (Packages in Lisp)
+      " n n" #'sly-list-all-packages
+      " n r" #'sly-reload-system
+      ;; Print
+      " p p" #'sly-eval-print-last-expression
+      " p d" #'sly-eval-defun-and-show
+      ;; REPL
+      " r q" #'sly-quit
+      " r r" #'sly-restart-inferior-lisp
+      " r b" #'sly-switch-to-output-buffer
+      " r c" #'sly-clear-repl
+      " r l" #'sly-load-file
+      ;; Test (Custom commands can be bound here if you're using libraries like FiveAM)
+      " t a" #'my-run-tests ;; Example placeholder
+      " t r" #'my-rerun-tests ;; Example placeholder
+      ))
+
+  (add-hook 'lisp-mode-hook 'my-common-lisp-mode-sly-keybindings))
+
+;; Format with CL-Formatter or equivalent
+(require 'reformatter)
+(reformatter-define cl-format
+  :program "cl-pretty-format"
+  :lighter " CLFmt")
+
+
 ;; =======================
 ;; Fennel Configuration
 ;; =======================
@@ -2610,5 +2689,6 @@ to that buffer. Otherwise create a new buffer with Pry."
         (destination (concat (file-name-as-directory directory) "license.rb")))
     (download-file url destination)
     (message "Downloaded license.rb to %s" destination)))
+
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
