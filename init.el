@@ -155,6 +155,9 @@
 ;;; base/general.el --- Description
 
 
+(add-to-list 'display-buffer-alist
+             '("^\\*Warnings\\*" . (display-buffer-no-window)))
+
 (defun downcase-current-line ()
   "Downcase the entire current line."
   (interactive)
@@ -790,7 +793,7 @@ parses its input."
 (setq inhibit-startup-screen t)
 
 ;; no scrollbar
-(scroll-bar-mode -1)
+;;(scroll-bar-mode -1)
 
 ;; nice scrolling
 (setq scroll-margin 0
@@ -856,19 +859,6 @@ parses its input."
     "o a" 'org-agenda))
 
 (setup-org-mode-keys)
-
-;; =======================
-;; Plan Mode Configuration
-;; =======================
-;;
-;; plan.el --- Description
-
-(load (expand-file-name
-       ".config/emacs/lisp/packages/plan/plan-mode"
-       gnus-home-directory))
-
-;; then require it
-(require 'plan-mode)
 
 ;; =======================
 ;; Help System Enhancements
@@ -1240,124 +1230,124 @@ parses its input."
 ;; Email Configuration
 ;; =======================
 
-(cond
- ((eq system-type 'darwin)  ; macOS
-  (add-to-list 'load-path "/opt/homebrew/share/emacs/site-lisp/mu4e"))
- ((eq system-type 'gnu/linux)  ; Linux
-  (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")))
-
-;; example configuration for mu4e
-
-;; make sure mu4e is in your load-path
-(require 'mu4e)
-
-;; use mu4e for e-mail in emacs
-(setq mail-user-agent 'mu4e-user-agent)
-
-(setq mu4e-sent-folder        "/Sent")
-(setq mu4e-drafts-folder      "/Drafts")
-(setq mu4e-trash-folder       "/Trash")
-(setq mu4e-refile-folder      "/Archive")
-
-(setq smtpmail-smtp-user      "brianwitte@mailfence.com")
-(setq mu4e-compose-signature  "Thanks,\nBrian Witte")
-
-(defun determine-email-flags ()
-  "Determine if the email is a reply and return appropriate flags."
-  (if (save-excursion
-        (goto-char (point-min))
-        (re-search-forward "^Subject: Re:" nil t))
-      "RS"
-    "S"))
-
-(defun rename-and-move-file (file-path sent-folder draft-folder)
-  "Rename and move the email file between draft and sent folders."
-  (let ((draft-file (file-name-nondirectory file-path))
-        (flags (determine-email-flags))
-        sent-file)
-    (setq sent-file
-          (replace-regexp-in-string ",DS" (concat "," flags) draft-file))
-    (rename-file
-     (concat draft-folder draft-file)
-     (concat sent-folder sent-file))
-    sent-file))
-
-(defun send-email-file (sent-folder sent-file)
-  "Send the email file using msmtp."
-  (let ((send-command
-         (format "cat %s | msmtp -t -a default --debug"
-                 (shell-quote-argument (concat sent-folder sent-file)))))
-    (compile send-command)
-    (= 0 compilation-exit-status)))
-
-(defun append-to-msmtp-log (file-path)
-  "Append a log entry for the given file-path."
-  (let ((current-time-iso8601
-         (format-time-string "%Y-%m-%dT%H:%M:%S%z")))
-    (append-to-file
-     (format "%s Sending: %s\n" current-time-iso8601 file-path)
-     nil
-     "~/.msmtp.log")))
-
-(defun send-current-file-msmtp ()
-  "Send the current buffer's file via msmtp."
-  (interactive)
-  (let ((file-path (buffer-file-name))
-        (sent-folder ".mail/mailfence.com/Sent/cur/")
-        (draft-folder ".mail/mailfence.com/Drafts/cur/")
-        sent-file)
-    (if (not file-path)
-        (message "Buffer is not visiting a file")
-      (setq sent-file
-            (rename-and-move-file file-path sent-folder draft-folder))
-      (append-to-msmtp-log (concat sent-folder sent-file))
-      (if (send-email-file sent-folder sent-file)
-          (delete-file
-           (concat draft-folder (file-name-nondirectory file-path)))
-        (rename-file
-         (concat sent-folder sent-file)
-         (concat draft-folder
-                 (file-name-nondirectory file-path)))))))
-
-(defun open-msmtp-log-and-drafts ()
-  "Open msmtp log file in a buffer and the drafts folder in dired mode."
-  (interactive)
-  ;; Delete other windows to start with a clean slate
-  (delete-other-windows)
-
-  ;; Open msmtp log in the current window
-  (find-file "~/.msmtp.log")  ; Replace with your msmtp log path
-
-  ;; Split window horizontally and open drafts in dired in the new window
-  (split-window-right)
-  (other-window 1)
-  (dired "~/.mail/mailfence.com/Drafts/cur/")  ; Replace with your Drafts path
-
-  ;; Move focus back to the msmtp log
-  (other-window -1))
-
-
-(defun fill-email-region-hard-break (start end)
-  (interactive "r")
-  (save-restriction
-    (narrow-to-region start end)
-    (goto-char (point-min))
-    (while (< (point) (point-max))
-      (let ((line-start (point))
-            (max-col fill-column))
-        (if (looking-at "^> ")
-            (progn
-              (forward-char 2)
-              (setq max-col (- max-col 2))))
-        (move-to-column max-col)
-        (if (or (>= (point) (line-end-position)) (eobp))
-            (forward-line 1)
-          (backward-word)
-          (forward-word)
-          (if (< (point) line-start)
-              (goto-char line-start))
-          (insert "\n> ")))))
-  (widen))
+;; (cond
+;;  ((eq system-type 'darwin)  ; macOS
+;;   (add-to-list 'load-path "/opt/homebrew/share/emacs/site-lisp/mu4e"))
+;;  ((eq system-type 'gnu/linux)  ; Linux
+;;   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")))
+;;
+;; ;; example configuration for mu4e
+;;
+;; ;; make sure mu4e is in your load-path
+;; (require 'mu4e)
+;;
+;; ;; use mu4e for e-mail in emacs
+;; (setq mail-user-agent 'mu4e-user-agent)
+;;
+;; (setq mu4e-sent-folder        "/Sent")
+;; (setq mu4e-drafts-folder      "/Drafts")
+;; (setq mu4e-trash-folder       "/Trash")
+;; (setq mu4e-refile-folder      "/Archive")
+;;
+;; (setq smtpmail-smtp-user      "brianwitte@mailfence.com")
+;; (setq mu4e-compose-signature  "Thanks,\nBrian Witte")
+;;
+;; (defun determine-email-flags ()
+;;   "Determine if the email is a reply and return appropriate flags."
+;;   (if (save-excursion
+;;         (goto-char (point-min))
+;;         (re-search-forward "^Subject: Re:" nil t))
+;;       "RS"
+;;     "S"))
+;;
+;; (defun rename-and-move-file (file-path sent-folder draft-folder)
+;;   "Rename and move the email file between draft and sent folders."
+;;   (let ((draft-file (file-name-nondirectory file-path))
+;;         (flags (determine-email-flags))
+;;         sent-file)
+;;     (setq sent-file
+;;           (replace-regexp-in-string ",DS" (concat "," flags) draft-file))
+;;     (rename-file
+;;      (concat draft-folder draft-file)
+;;      (concat sent-folder sent-file))
+;;     sent-file))
+;;
+;; (defun send-email-file (sent-folder sent-file)
+;;   "Send the email file using msmtp."
+;;   (let ((send-command
+;;          (format "cat %s | msmtp -t -a default --debug"
+;;                  (shell-quote-argument (concat sent-folder sent-file)))))
+;;     (compile send-command)
+;;     (= 0 compilation-exit-status)))
+;;
+;; (defun append-to-msmtp-log (file-path)
+;;   "Append a log entry for the given file-path."
+;;   (let ((current-time-iso8601
+;;          (format-time-string "%Y-%m-%dT%H:%M:%S%z")))
+;;     (append-to-file
+;;      (format "%s Sending: %s\n" current-time-iso8601 file-path)
+;;      nil
+;;      "~/.msmtp.log")))
+;;
+;; (defun send-current-file-msmtp ()
+;;   "Send the current buffer's file via msmtp."
+;;   (interactive)
+;;   (let ((file-path (buffer-file-name))
+;;         (sent-folder ".mail/mailfence.com/Sent/cur/")
+;;         (draft-folder ".mail/mailfence.com/Drafts/cur/")
+;;         sent-file)
+;;     (if (not file-path)
+;;         (message "Buffer is not visiting a file")
+;;       (setq sent-file
+;;             (rename-and-move-file file-path sent-folder draft-folder))
+;;       (append-to-msmtp-log (concat sent-folder sent-file))
+;;       (if (send-email-file sent-folder sent-file)
+;;           (delete-file
+;;            (concat draft-folder (file-name-nondirectory file-path)))
+;;         (rename-file
+;;          (concat sent-folder sent-file)
+;;          (concat draft-folder
+;;                  (file-name-nondirectory file-path)))))))
+;;
+;; (defun open-msmtp-log-and-drafts ()
+;;   "Open msmtp log file in a buffer and the drafts folder in dired mode."
+;;   (interactive)
+;;   ;; Delete other windows to start with a clean slate
+;;   (delete-other-windows)
+;;
+;;   ;; Open msmtp log in the current window
+;;   (find-file "~/.msmtp.log")  ; Replace with your msmtp log path
+;;
+;;   ;; Split window horizontally and open drafts in dired in the new window
+;;   (split-window-right)
+;;   (other-window 1)
+;;   (dired "~/.mail/mailfence.com/Drafts/cur/")  ; Replace with your Drafts path
+;;
+;;   ;; Move focus back to the msmtp log
+;;   (other-window -1))
+;;
+;;
+;; (defun fill-email-region-hard-break (start end)
+;;   (interactive "r")
+;;   (save-restriction
+;;     (narrow-to-region start end)
+;;     (goto-char (point-min))
+;;     (while (< (point) (point-max))
+;;       (let ((line-start (point))
+;;             (max-col fill-column))
+;;         (if (looking-at "^> ")
+;;             (progn
+;;               (forward-char 2)
+;;               (setq max-col (- max-col 2))))
+;;         (move-to-column max-col)
+;;         (if (or (>= (point) (line-end-position)) (eobp))
+;;             (forward-line 1)
+;;           (backward-word)
+;;           (forward-word)
+;;           (if (< (point) line-start)
+;;               (goto-char line-start))
+;;           (insert "\n> ")))))
+;;   (widen))
 
 
 ;; =======================
@@ -2048,6 +2038,80 @@ FILE-MAP is a list of (NAME . PATH) pairs."
   (add-hook 'fennel-mode-hook 'my-fennel-mode-keybindings)
   (add-hook 'fennel-mode-hook 'my-fennel-evil-keybindings))
 
+
+;; =======================
+;; Forth Configuration
+;; =======================
+;;; forth.el --- Forth Development Configuration
+
+(use-package forth-mode
+  :straight t
+  :config
+  (defun my-forth-mode-keybindings ()
+    (my-local-leader-def
+      :states 'normal
+      :keymaps 'forth-mode-map
+      " '"  #'run-forth
+      " \"" #'forth-restart
+      " c"  #'forth-connect
+      " C"  #'forth-load-core
+      " m"  #'forth-see
+      " M"  #'forth-see-next ;; Debug
+      " d d" #'forth-debug-word
+      ;; Eval
+      " e b" #'forth-eval-buffer
+      " e d" #'forth-eval-definition
+      " e D" #'forth-insert-definition-in-repl
+      " e e" #'forth-eval-last-expression
+      " e E" #'forth-insert-last-expression-in-repl
+      " e r" #'forth-eval-region
+      " e R" #'forth-insert-region-in-repl
+      " e u" #'forth-forget-word
+      ;; Goto
+      " g b" #'forth-pop-mark
+      " g g" #'forth-find-definition
+      " g n" #'forth-find-tag
+      ;; Help
+      " h a" #'forth-apropos
+      " h c" #'forth-words
+      " h d" #'forth-see
+      " h j" #'forth-view-manual
+      " h w" #'forth-browse-words
+      ;; Inspect
+      " i e" #'forth-toggle-stack-display
+      " i i" #'forth-inspect
+      " i r" #'forth-inspect-stack
+      ;; Namespace (Vocabulary in Forth)
+      " n n" #'forth-words
+      " n N" #'forth-words-all
+      " n r" #'forth-reload-core
+      ;; Print
+      " p p" #'forth-see-last-word
+      " p P" #'forth-see-last-word-to-comment
+      " p d" #'forth-see-definition
+      " p D" #'forth-see-definition-to-comment
+      " p r" #'forth-see-last-word-to-repl
+      ;; REPL
+      " r n" #'forth-set-vocabulary
+      " r q" #'forth-quit
+      " r r" #'forth-reload
+      " r R" #'forth-restart
+      " r b" #'forth-switch-to-repl
+      " r B" #'+forth/switch-to-repl-and-set-vocabulary
+      " r c" #'forth-clear-output
+      " r f" #'forth-load-file
+      " r l" #'forth-load-buffer
+      " r L" #'forth-load-buffer-and-switch-to-repl
+      ;; Test
+      " t a" #'forth-test-rerun
+      " t l" #'forth-test-loaded
+      " t n" #'forth-test-vocabulary
+      " t p" #'forth-test-all
+      " t r" #'forth-test-rerun-failed
+      " t s" #'forth-test-filtered
+      " t t" #'forth-test-word))
+  (add-hook 'forth-mode-hook 'my-forth-mode-keybindings))
+
 ;; =======================
 ;; Haskell Configuration
 ;; =======================
@@ -2534,12 +2598,12 @@ to that buffer. Otherwise create a new buffer with Pry."
   (get-buffer "*Rails*"))
 
 ;; load local chruby package
-(load (expand-file-name
-       ".config/emacs/lisp/packages/chruby"
-       gnus-home-directory))
+;;(load (expand-file-name
+;;       ".config/emacs/lisp/packages/chruby"
+;;       gnus-home-directory))
 
 ;; then require it
-(require 'chruby)
+;;(require 'chruby)
 
 ;; =======================
 ;; Zig Configuration
